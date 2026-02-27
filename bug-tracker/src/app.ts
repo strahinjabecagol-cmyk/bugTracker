@@ -1,0 +1,38 @@
+import express, { Request, Response, NextFunction } from 'express';
+import usersRouter    from './routes/users';
+import projectsRouter from './routes/projects';
+import bugsRouter     from './routes/bugs';
+import commentsRouter, { deleteComment } from './routes/comments';
+
+const app = express();
+app.use(express.json());
+
+// Core routes
+app.use('/users',    usersRouter);
+app.use('/projects', projectsRouter);
+app.use('/bugs',     bugsRouter);
+
+// Nested: GET/POST /bugs/:id/comments
+app.use('/bugs/:id/comments', commentsRouter);
+
+// Nested: GET /projects/:id/bugs
+app.use('/projects/:id/bugs', bugsRouter);
+
+// DELETE /comments/:id
+const commentDeleteRouter = express.Router();
+deleteComment(commentDeleteRouter);
+app.use('/comments', commentDeleteRouter);
+
+// Global error handler
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Internal server error' });
+});
+
+const PORT = process.env.PORT ?? 3000;
+app.listen(PORT, () => {
+  console.log(`Bug Tracker API running on http://localhost:${PORT}`);
+});
+
+export default app;

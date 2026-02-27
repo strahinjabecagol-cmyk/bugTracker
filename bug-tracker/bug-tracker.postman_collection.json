@@ -1,0 +1,217 @@
+{
+  "info": {
+    "name": "Bug Tracker API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" }
+  ],
+  "item": [
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get all users",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/users"
+          }
+        },
+        {
+          "name": "Get user by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/users/1"
+          }
+        },
+        {
+          "name": "Create user",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/users",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"role\": \"developer\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update user",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/users/1",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Updated\",\n  \"role\": \"admin\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete user",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/users/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Projects",
+      "item": [
+        {
+          "name": "Get all projects",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/projects"
+          }
+        },
+        {
+          "name": "Get project by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/projects/1"
+          }
+        },
+        {
+          "name": "Create project",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/projects",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"New Project\",\n  \"description\": \"Project description\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update project",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/projects/1",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Project Name\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete project",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/projects/1"
+          }
+        },
+        {
+          "name": "Get bugs by project",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/projects/1/bugs"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bugs",
+      "item": [
+        {
+          "name": "Get all bugs",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/bugs"
+          }
+        },
+        {
+          "name": "Get bugs (filtered)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/bugs?status=open&priority=high",
+              "host": ["{{baseUrl}}"],
+              "path": ["bugs"],
+              "query": [
+                { "key": "status", "value": "open", "description": "open | in_progress | resolved | closed" },
+                { "key": "priority", "value": "high", "description": "low | medium | high | critical" },
+                { "key": "severity", "value": "", "description": "minor | major | critical | blocker", "disabled": true },
+                { "key": "project_id", "value": "", "disabled": true },
+                { "key": "assignee_id", "value": "", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get bug by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/bugs/1"
+          }
+        },
+        {
+          "name": "Create bug",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/bugs",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"project_id\": 1,\n  \"title\": \"Login button not working\",\n  \"description\": \"Clicking login does nothing\",\n  \"priority\": \"high\",\n  \"severity\": \"major\",\n  \"reporter_id\": 1,\n  \"assignee_id\": 2\n}"
+            }
+          }
+        },
+        {
+          "name": "Update bug",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/bugs/1",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"in_progress\",\n  \"priority\": \"critical\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete bug",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/bugs/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Comments",
+      "item": [
+        {
+          "name": "Get comments for bug",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/bugs/1/comments"
+          }
+        },
+        {
+          "name": "Add comment to bug",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/bugs/1/comments",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": 1,\n  \"content\": \"Looking into this issue now.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete comment",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/comments/1"
+          }
+        }
+      ]
+    }
+  ]
+}

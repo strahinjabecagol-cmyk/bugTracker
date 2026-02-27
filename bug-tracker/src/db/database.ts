@@ -1,0 +1,54 @@
+import Database from 'better-sqlite3';
+import path from 'path';
+
+const DB_PATH = path.join(process.cwd(), 'bugtracker.db');
+
+const db = new Database(DB_PATH);
+
+// Enable WAL mode for better performance
+db.pragma('journal_mode = WAL');
+db.pragma('foreign_keys = ON');
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS users (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    name       TEXT    NOT NULL,
+    email      TEXT    NOT NULL UNIQUE,
+    role       TEXT    NOT NULL CHECK(role IN ('admin', 'developer', 'tester')),
+    created_at TEXT    NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS projects (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    name        TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    created_at  TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS bugs (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id  INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    title       TEXT    NOT NULL,
+    description TEXT    NOT NULL DEFAULT '',
+    status      TEXT    NOT NULL DEFAULT 'open'
+                        CHECK(status IN ('open', 'in_progress', 'resolved', 'closed')),
+    priority    TEXT    NOT NULL DEFAULT 'medium'
+                        CHECK(priority IN ('low', 'medium', 'high', 'critical')),
+    severity    TEXT    NOT NULL DEFAULT 'major'
+                        CHECK(severity IN ('minor', 'major', 'critical', 'blocker')),
+    reporter_id INTEGER NOT NULL REFERENCES users(id),
+    assignee_id INTEGER          REFERENCES users(id),
+    created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+    updated_at  TEXT    NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS comments (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    bug_id     INTEGER NOT NULL REFERENCES bugs(id) ON DELETE CASCADE,
+    user_id    INTEGER NOT NULL REFERENCES users(id),
+    content    TEXT    NOT NULL,
+    created_at TEXT    NOT NULL DEFAULT (datetime('now'))
+  );
+`);
+
+export default db;
