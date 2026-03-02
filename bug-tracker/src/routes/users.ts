@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import db from '../db/database';
+import db, { DELETED_USER_ID } from '../db/database';
 import { validate } from '../middleware/validate';
 import { requireAdmin } from '../middleware/auth';
 
@@ -65,7 +65,17 @@ router.put('/:id', requireAdmin, validate(UserUpdateSchema), (req, res) => {
 
 // DELETE /users/:id
 router.delete('/:id', requireAdmin, (req, res) => {
-  db.prepare('DELETE FROM users WHERE id = ?').run(req.params.id);
+  const { id } = req.params;
+  const adminId = req.user!.id;
+  db.transaction(() => {
+    // Reassign reported bugs to the admin performing the delete
+    db.prepare('UPDATE bugs SET reporter_id = ? WHERE reporter_id = ?').run(adminId, id);
+    // Nullify assignee where applicable
+    db.prepare('UPDATE bugs SET assignee_id = NULL WHERE assignee_id = ?').run(id);
+    // Reassign comments to the system "Deleted User" account
+    db.prepare('UPDATE comments SET user_id = ? WHERE user_id = ?').run(DELETED_USER_ID, id);
+    db.prepare('DELETE FROM users WHERE id = ?').run(id);
+  })();
   res.status(204).send();
 });
 

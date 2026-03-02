@@ -58,4 +58,14 @@ try {
   // column already exists — ignore
 }
 
+// System "Deleted User" — comments and bugs from deleted users are reassigned here
+db.prepare(`
+  INSERT OR IGNORE INTO users (name, email, role, password_hash)
+  VALUES ('Deleted User', 'deleted@system', 'developer', NULL)
+`).run();
+
+export const DELETED_USER_ID = (
+  db.prepare(`SELECT id FROM users WHERE email = 'deleted@system'`).get() as { id: number }
+).id;
+
 export default db;
