@@ -201,8 +201,8 @@ export default function BoardView() {
         <div
           className="board-card board-card-ghost"
           style={{
-            left: mousePos.x - dragRef.current.offsetX,
-            top: mousePos.y - dragRef.current.offsetY,
+            left: Math.round(mousePos.x - dragRef.current.offsetX),
+            top: Math.round(mousePos.y - dragRef.current.offsetY),
             width: dragRef.current.width,
           }}
         >
