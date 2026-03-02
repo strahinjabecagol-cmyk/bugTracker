@@ -176,13 +176,12 @@ export default function BoardView() {
                       return (
                         <div
                           key={bug.id}
-                          className={`board-card${isDragging ? ' board-card-dragging' : ''}`}
+                          className={`board-card board-card-${bug.type}${isDragging ? ' board-card-dragging' : ''}`}
                           onMouseDown={(e) => handleMouseDown(e, bug)}
                         >
                           <span className="board-card-id">#{bug.id}</span>
                           <p className="board-card-title">{bug.title}</p>
                           <div className="board-card-badges">
-                            <Badge value={bug.type} type="type" />
                             <Badge value={bug.priority} type="priority" />
                             <Badge value={bug.severity} type="severity" />
                           </div>
@@ -200,7 +199,7 @@ export default function BoardView() {
       {/* Ghost card — rendered at fixed position, follows cursor */}
       {activeDragId !== null && dragRef.current && (
         <div
-          className="board-card board-card-ghost"
+          className={`board-card board-card-${dragRef.current.bug.type} board-card-ghost`}
           style={{
             left: Math.round(mousePos.x - dragRef.current.offsetX),
             top: Math.round(mousePos.y - dragRef.current.offsetY),
@@ -210,7 +209,6 @@ export default function BoardView() {
           <span className="board-card-id">#{dragRef.current.bug.id}</span>
           <p className="board-card-title">{dragRef.current.bug.title}</p>
           <div className="board-card-badges">
-            <Badge value={dragRef.current.bug.type} type="type" />
             <Badge value={dragRef.current.bug.priority} type="priority" />
             <Badge value={dragRef.current.bug.severity} type="severity" />
           </div>
