@@ -578,6 +578,20 @@ h4 { margin: 0 0 0.5rem; font-size: 0.875rem; font-weight: 600; }
   padding: 1.5rem 2rem;
 }
 .board-page h1 { color: #f1f5f9; }
+.board-heading {
+  transform: skewX(-12deg);
+  background: #1e293b;
+  padding: 0.25rem 1.25rem;
+  display: inline-block;
+  border-left: 4px solid rgba(255,255,255,0.2);
+}
+.board-heading span { display: inline-block; transform: skewX(12deg); }
+.board-btn {
+  transform: skewX(-12deg);
+  border-radius: 0;
+}
+.board-btn:hover { transform: skewX(-12deg) translateY(-1px); color: #fff; }
+.board-btn:active { transform: skewX(-12deg) translateY(0); }
 
 .board {
   display: grid;

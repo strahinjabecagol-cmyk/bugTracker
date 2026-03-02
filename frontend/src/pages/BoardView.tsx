@@ -40,6 +40,11 @@ export default function BoardView() {
   const [overColumn, setOverColumn] = useState<Bug['status'] | null>(null);
 
   useEffect(() => {
+    document.body.style.background = '#0f172a';
+    return () => { document.body.style.background = ''; };
+  }, []);
+
+  useEffect(() => {
     setLoading(true);
     setError('');
     getBugs({ project_id: selectedProjectId ? Number(selectedProjectId) : undefined })
@@ -145,8 +150,8 @@ export default function BoardView() {
   return (
     <div className="page board-page" style={{ userSelect: activeDragId !== null ? 'none' : undefined }}>
       <div className="page-header">
-        <h1>Board</h1>
-        <Link to="/bugs/new" className="btn btn-primary">+ New Item</Link>
+        <h1 className="board-heading"><span>Board</span></h1>
+        <Link to="/bugs/new" className="btn btn-primary board-btn"><span style={{ display: 'inline-block', transform: 'skewX(12deg)' }}>+ New Item</span></Link>
       </div>
 
       {error && <p className="error">{error}</p>}
