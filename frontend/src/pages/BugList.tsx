@@ -1,33 +1,150 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { getBugs } from '../api';
 import type { Bug } from '../types';
 import Badge from '../components/Badge';
 import { useProject } from '../context/ProjectContext';
 
+type SortCol = 'id' | 'title' | 'project' | 'status' | 'priority' | 'severity';
+type SortDir = 'asc' | 'desc';
+type Priority = Bug['priority'];
+type Severity = Bug['severity'];
+type Status   = Bug['status'];
+
+const PRIORITIES: Priority[] = ['low', 'medium', 'high', 'critical'];
+const SEVERITIES: Severity[] = ['minor', 'major', 'critical', 'blocker'];
+const STATUSES:   Status[]   = ['open', 'in_progress', 'resolved', 'closed'];
+const PRIORITY_ORDER = { low: 0, medium: 1, high: 2, critical: 3 };
+const SEVERITY_ORDER = { minor: 0, major: 1, critical: 2, blocker: 3 };
+const STATUS_ORDER   = { open: 0, in_progress: 1, resolved: 2, closed: 3 };
+
+function useMultiFilter<T extends string>() {
+  const [selected, setSelected] = useState<Set<T>>(new Set());
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function onClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener('mousedown', onClickOutside);
+    return () => document.removeEventListener('mousedown', onClickOutside);
+  }, []);
+
+  function toggle(v: T) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.has(v) ? next.delete(v) : next.add(v);
+      return next;
+    });
+  }
+
+  function clear() { setSelected(new Set()); }
+
+  function label(singular: string) {
+    if (selected.size === 0) return `All ${singular}s`;
+    if (selected.size === 1) return [...selected][0];
+    return `${selected.size} ${singular}s`;
+  }
+
+  return { selected, open, setOpen, ref, toggle, clear, label };
+}
+
+type FilterHook<T extends string> = ReturnType<typeof useMultiFilter<T>>;
+
+function MultiDropdown<T extends string>({ hook, items, singular, badgeType }: {
+  hook: FilterHook<T>;
+  items: T[];
+  singular: string;
+  badgeType: 'priority' | 'severity' | 'status';
+}) {
+  return (
+    <div className="priority-dropdown" ref={hook.ref}>
+      <button
+        className={`priority-dropdown-trigger${hook.open ? ' open' : ''}${hook.selected.size > 0 ? ' has-selection' : ''}`}
+        onClick={() => hook.setOpen((o) => !o)}
+      >
+        {hook.label(singular)}
+        {hook.selected.size > 0
+          ? <span className="dropdown-clear" onClick={(e) => { e.stopPropagation(); hook.clear(); }}>×</span>
+          : <span className="dropdown-chevron">▾</span>
+        }
+      </button>
+      {hook.open && (
+        <div className="priority-dropdown-menu">
+          {items.map((v) => (
+            <label key={v} className="priority-dropdown-item">
+              <input type="checkbox" checked={hook.selected.has(v)} onChange={() => hook.toggle(v)} />
+              <span className={`badge badge-${badgeType}-${v.replace('_', '-')}`}>{v.replace('_', ' ')}</span>
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function BugList() {
   const { projects, selectedProjectId } = useProject();
   const [bugs, setBugs] = useState<Bug[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [sortCol, setSortCol] = useState<SortCol>('id');
+  const [sortDir, setSortDir] = useState<SortDir>('asc');
 
-  const [filterStatus, setFilterStatus] = useState('');
-  const [filterPriority, setFilterPriority] = useState('');
+  const priority = useMultiFilter<Priority>();
+  const severity = useMultiFilter<Severity>();
+  const status   = useMultiFilter<Status>();
 
   useEffect(() => {
     setLoading(true);
     setError('');
-    getBugs({
-      status: filterStatus || undefined,
-      priority: filterPriority || undefined,
-      project_id: selectedProjectId ? Number(selectedProjectId) : undefined,
-    })
+    getBugs({ project_id: selectedProjectId ? Number(selectedProjectId) : undefined })
       .then(setBugs)
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [filterStatus, filterPriority, selectedProjectId]);
+  }, [selectedProjectId]);
+
+  function handleSort(col: SortCol) {
+    if (col === sortCol) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    else { setSortCol(col); setSortDir('asc'); }
+  }
+
+  const sorted = useMemo(() => {
+    const pName = (id: number) => projects.find((p) => p.id === id)?.name ?? `${id}`;
+    const filtered = bugs
+      .filter((b) => status.selected.size   === 0 || status.selected.has(b.status))
+      .filter((b) => priority.selected.size === 0 || priority.selected.has(b.priority))
+      .filter((b) => severity.selected.size === 0 || severity.selected.has(b.severity));
+
+    return [...filtered].sort((a, b) => {
+      let cmp = 0;
+      switch (sortCol) {
+        case 'id':       cmp = a.id - b.id; break;
+        case 'title':    cmp = a.title.localeCompare(b.title); break;
+        case 'project':  cmp = pName(a.project_id).localeCompare(pName(b.project_id)); break;
+        case 'status':   cmp = STATUS_ORDER[a.status] - STATUS_ORDER[b.status]; break;
+        case 'priority': cmp = PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]; break;
+        case 'severity': cmp = SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]; break;
+      }
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+  }, [bugs, status.selected, priority.selected, severity.selected, sortCol, sortDir, projects]);
 
   const projectName = (id: number) => projects.find((p) => p.id === id)?.name ?? `#${id}`;
+
+  function SortIcon({ col }: { col: SortCol }) {
+    if (sortCol !== col) return <span className="sort-icon sort-icon-inactive">↕</span>;
+    return <span className="sort-icon">{sortDir === 'asc' ? '↑' : '↓'}</span>;
+  }
+
+  function Th({ col, children }: { col: SortCol; children: React.ReactNode }) {
+    return (
+      <th className={`th-sortable${sortCol === col ? ' th-sorted' : ''}`} onClick={() => handleSort(col)}>
+        {children} <SortIcon col={col} />
+      </th>
+    );
+  }
 
   return (
     <div className="page">
@@ -37,21 +154,9 @@ export default function BugList() {
       </div>
 
       <div className="filters">
-        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
-          <option value="">All statuses</option>
-          <option value="open">Open</option>
-          <option value="in_progress">In Progress</option>
-          <option value="resolved">Resolved</option>
-          <option value="closed">Closed</option>
-        </select>
-
-        <select value={filterPriority} onChange={(e) => setFilterPriority(e.target.value)}>
-          <option value="">All priorities</option>
-          <option value="low">Low</option>
-          <option value="medium">Medium</option>
-          <option value="high">High</option>
-          <option value="critical">Critical</option>
-        </select>
+        <MultiDropdown hook={status}   items={STATUSES}   singular="status"   badgeType="status"   />
+        <MultiDropdown hook={priority} items={PRIORITIES} singular="priority" badgeType="priority" />
+        <MultiDropdown hook={severity} items={SEVERITIES} singular="severity" badgeType="severity" />
       </div>
 
       {error && <p className="error">{error}</p>}
@@ -61,18 +166,18 @@ export default function BugList() {
         <table className="table">
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Title</th>
-              <th>Project</th>
-              <th>Status</th>
-              <th>Priority</th>
-              <th>Severity</th>
+              <Th col="id">ID</Th>
+              <Th col="title">Title</Th>
+              <Th col="project">Project</Th>
+              <Th col="status">Status</Th>
+              <Th col="priority">Priority</Th>
+              <Th col="severity">Severity</Th>
             </tr>
           </thead>
           <tbody>
-            {bugs.length === 0 ? (
+            {sorted.length === 0 ? (
               <tr><td colSpan={6} style={{ textAlign: 'center', color: '#888' }}>No bugs found</td></tr>
-            ) : bugs.map((bug) => (
+            ) : sorted.map((bug) => (
               <tr key={bug.id}>
                 <td>#{bug.id}</td>
                 <td><Link to={`/bugs/${bug.id}`}>{bug.title}</Link></td>
