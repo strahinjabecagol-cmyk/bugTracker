@@ -573,8 +573,8 @@ h4 { margin: 0 0 0.5rem; font-size: 0.875rem; font-weight: 600; }
 /* ─── Board ──────────────────────────────────────── */
 .board-page {
   background: #0f172a;
-  min-height: 100vh;
-  margin: 0;
+  min-height: calc(100vh - 56px);
+  margin: -2rem;
   padding: 1.5rem 2rem;
 }
 .board-page h1 { color: #f1f5f9; }
