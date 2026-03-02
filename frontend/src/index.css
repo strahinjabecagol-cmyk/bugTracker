@@ -578,7 +578,7 @@ h4 { margin: 0 0 0.5rem; font-size: 0.875rem; font-weight: 600; }
 .board-column {
   background: var(--surface-2);
   border-radius: var(--radius);
-  padding: 0.875rem;
+  padding: 1.0625rem 0.2875rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -615,19 +615,22 @@ h4 { margin: 0 0 0.5rem; font-size: 0.875rem; font-weight: 600; }
   text-align: center;
 }
 
-.board-cards { display: flex; flex-direction: column; gap: 0.5rem; }
+.board-cards { display: flex; flex-direction: column; gap: 0.1rem; }
 
 .board-card {
   background: var(--surface);
-  border-radius: var(--radius-sm);
-  padding: 0.875rem;
+  border-radius: 0;
+  padding: 0.75rem;
   box-shadow: var(--shadow-xs);
   border: 1px solid var(--border);
   cursor: grab;
   color: inherit;
-  transition: box-shadow var(--t) var(--ease), border-color var(--t) var(--ease), transform var(--t) var(--ease);
+  transition: box-shadow var(--t) var(--ease), border-color var(--t) var(--ease);
+  width: 100%;
+  transform: skewX(-12deg);
 }
-.board-card:hover { box-shadow: var(--shadow); border-color: #c7d2fe; transform: translateY(-1px); }
+.board-card > * { transform: skewX(12deg); }
+.board-card:hover { box-shadow: var(--shadow); border-color: #c7d2fe; }
 .board-card-id { font-size: 0.7rem; color: var(--text-subtle); font-weight: 600; }
 .board-card-title { margin: 0.25rem 0 0.625rem; font-size: 0.85rem; font-weight: 500; color: var(--text); line-height: 1.4; }
 .board-card-badges { display: flex; gap: 0.3rem; flex-wrap: wrap; }
@@ -639,9 +642,10 @@ h4 { margin: 0 0 0.5rem; font-size: 0.875rem; font-weight: 600; }
   position: fixed;
   pointer-events: none;
   z-index: 1000;
+  border-radius: 0;
   box-shadow: var(--shadow-xl);
   border-color: #818cf8;
-  transform: rotate(2deg) scale(1.03);
+  transform: skewX(-12deg) rotate(3deg) scale(1);
   cursor: grabbing;
 }
 
