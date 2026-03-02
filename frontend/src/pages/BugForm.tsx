@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { createBug, getProjects, getUsers } from '../api';
 import type { Project, User } from '../types';
 import { useProject } from '../context/ProjectContext';
@@ -57,7 +57,7 @@ export default function BugForm() {
   return (
     <div className="page">
       <div className="page-header">
-        <Link to="/" className="back-link">← Back to list</Link>
+        <button className="back-link" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }} onClick={() => navigate(-1)}>← Back</button>
       </div>
 
       <div className="form-card">
@@ -138,7 +138,7 @@ export default function BugForm() {
             <button type="submit" className="btn btn-primary" disabled={submitting}>
               {submitting ? 'Creating...' : 'Create Bug'}
             </button>
-            <Link to="/" className="btn btn-secondary">Cancel</Link>
+            <button type="button" className="btn btn-secondary" onClick={() => navigate(-1)}>Cancel</button>
           </div>
         </form>
       </div>

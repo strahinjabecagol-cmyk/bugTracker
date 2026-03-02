@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { getBug, updateBug, deleteBug, getComments, addComment, getUsers, getProjects } from '../api';
 import type { Bug, Comment, User, Project } from '../types';
 import Badge from '../components/Badge';
@@ -95,7 +95,7 @@ export default function BugDetail() {
   return (
     <div className="page">
       <div className="page-header">
-        <Link to="/" className="back-link">← Back to list</Link>
+        <button className="back-link" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }} onClick={() => navigate(-1)}>← Back</button>
         <div className="header-actions">
           {!editing && (
             <button className="btn btn-secondary" onClick={() => setEditing(true)}>Edit</button>
