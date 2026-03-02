@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import db from '../db/database';
 import { validate } from '../middleware/validate';
+import { requireAdmin } from '../middleware/auth';
 
 const router = Router({ mergeParams: true });
 
@@ -18,7 +19,7 @@ router.get('/', (req, res) => {
     JOIN users u ON u.id = c.user_id
     WHERE c.bug_id = ?
     ORDER BY c.id
-  `).all(req.params.id);
+  `).all((req.params as { id: string }).id);
   res.json(comments);
 });
 
@@ -40,7 +41,7 @@ router.post('/', validate(CommentCreateSchema), (req, res) => {
 
 // DELETE /comments/:id  (mounted separately in app.ts)
 export const deleteComment = (router2: Router) => {
-  router2.delete('/:id', (req, res) => {
+  router2.delete('/:id', requireAdmin, (req, res) => {
     db.prepare('DELETE FROM comments WHERE id = ?').run(req.params.id);
     res.status(204).send();
   });

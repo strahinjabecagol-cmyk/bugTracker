@@ -3,11 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getBug, updateBug, deleteBug, getComments, addComment, getUsers, getProjects } from '../api';
 import type { Bug, Comment, User, Project } from '../types';
 import Badge from '../components/Badge';
+import { useAuth } from '../context/AuthContext';
 
 export default function BugDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const bugId = Number(id);
+  const { user: authUser } = useAuth();
+  const isAdmin = authUser?.role === 'admin';
 
   const [bug, setBug] = useState<Bug | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -100,7 +103,7 @@ export default function BugDetail() {
           {!editing && (
             <button className="btn btn-secondary" onClick={() => setEditing(true)}>Edit</button>
           )}
-          <button className="btn btn-danger" onClick={handleDelete}>Delete</button>
+          {isAdmin && <button className="btn btn-danger" onClick={handleDelete}>Delete</button>}
         </div>
       </div>
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getUsers, createUser, updateUser, deleteUser } from '../api';
 import type { User } from '../types';
+import { useAuth } from '../context/AuthContext';
 
 type ModalMode = 'create' | 'edit';
 
@@ -16,6 +17,8 @@ export default function UserList() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { user: authUser } = useAuth();
+  const isAdmin = authUser?.role === 'admin';
 
   const [modal, setModal] = useState<{ mode: ModalMode; user?: User } | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
@@ -110,7 +113,7 @@ export default function UserList() {
                 <td>
                   <div style={{ display: 'flex', gap: '0.4rem' }}>
                     <button className="btn btn-secondary" onClick={() => openEdit(u)}>Edit</button>
-                    <button className="btn btn-danger" onClick={() => handleDelete(u)}>Delete</button>
+                    {isAdmin && <button className="btn btn-danger" onClick={() => handleDelete(u)}>Delete</button>}
                   </div>
                 </td>
               </tr>

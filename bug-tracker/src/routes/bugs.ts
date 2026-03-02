@@ -2,6 +2,7 @@ import { Router, Request } from 'express';
 import { z } from 'zod';
 import db from '../db/database';
 import { validate } from '../middleware/validate';
+import { requireAdmin } from '../middleware/auth';
 
 const router = Router({ mergeParams: true });
 
@@ -94,7 +95,7 @@ router.put('/:id', validate(BugUpdateSchema), (req, res) => {
 });
 
 // DELETE /bugs/:id
-router.delete('/:id', (req, res) => {
+router.delete('/:id', requireAdmin, (req, res) => {
   db.prepare('DELETE FROM bugs WHERE id = ?').run(req.params.id);
   res.status(204).send();
 });
