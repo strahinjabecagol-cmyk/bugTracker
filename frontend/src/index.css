@@ -638,8 +638,8 @@ h4 { margin: 0 0 0.5rem; font-size: 0.875rem; font-weight: 600; }
 .board-cards { display: flex; flex-direction: column; gap: 0.1rem; }
 
 .board-page .board-card { background: #1e293b; border-color: #2d3f55; }
-.board-page .board-card-bug  { background: #1e1515; border-color: #7f1d1d; }
-.board-page .board-card-task { background: #111827; border-color: #1e3a5f; }
+.board-page .board-card-bug,
+.board-page .board-card-task { background: #1e293b; border-color: #2d3f55; }
 .board-page .board-card-title { color: #cbd5e1; }
 .board-page .board-card-badges .badge { background: #1e293b; color: #cbd5e1; border-color: #2d3f55; }
 .board-page .board-card:hover { box-shadow: none; border-color: #475569; }
@@ -660,7 +660,18 @@ h4 { margin: 0 0 0.5rem; font-size: 0.875rem; font-weight: 600; }
 .board-card:hover { box-shadow: var(--shadow); border-color: #c7d2fe; }
 .board-card-bug  { border-color: #f87171; background: #2d1f1f; }
 .board-card-task { border-color: #60a5fa; background: #1a2535; }
+.board-card-top { display: flex; align-items: center; justify-content: space-between; }
 .board-card-id { font-size: 0.7rem; color: var(--text-subtle); font-weight: 600; display: inline-block; }
+.board-card-type-pill {
+  font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+  background: #1e293b; color: #cbd5e1; border: 1px solid #2d3f55;
+  padding: 0.1rem 0.4rem; position: relative; padding-right: calc(0.4rem + 5px);
+  display: inline-block; transform: skewX(-12deg);
+}
+.board-card-type-pill span { display: inline-block; transform: skewX(12deg); }
+.board-card-type-pill::after { content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 5px; }
+.board-card-type-bug::after  { background: #f87171; }
+.board-card-type-task::after { background: #60a5fa; }
 .board-card-title { margin: 0.25rem 0 0.625rem; font-size: 0.85rem; font-weight: 500; color: var(--text); line-height: 1.4; }
 .board-card-badges { display: flex; gap: 0.3rem; flex-wrap: wrap; }
 .board-card-badges .badge { background: #f1f5f9; color: #94a3b8; border-color: #e2e8f0; border-radius: 0; transform: skewX(-12deg); position: relative; padding-left: calc(0.4rem + 5px); }

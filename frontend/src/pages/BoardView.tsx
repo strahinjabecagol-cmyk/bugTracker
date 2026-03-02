@@ -179,7 +179,10 @@ export default function BoardView() {
                           className={`board-card board-card-${bug.type}${isDragging ? ' board-card-dragging' : ''}`}
                           onMouseDown={(e) => handleMouseDown(e, bug)}
                         >
-                          <span className="board-card-id">#{bug.id}</span>
+                          <div className="board-card-top">
+                            <span className="board-card-id">#{bug.id}</span>
+                            <span className={`board-card-type-pill board-card-type-${bug.type}`}><span>{bug.type}</span></span>
+                          </div>
                           <p className="board-card-title">{bug.title}</p>
                           <div className="board-card-badges">
                             <Badge value={bug.priority} type="priority" />
@@ -206,7 +209,10 @@ export default function BoardView() {
             width: dragRef.current.width,
           }}
         >
-          <span className="board-card-id">#{dragRef.current.bug.id}</span>
+          <div className="board-card-top">
+            <span className="board-card-id">#{dragRef.current.bug.id}</span>
+            <span className={`board-card-type-pill board-card-type-${dragRef.current.bug.type}`}><span>{dragRef.current.bug.type}</span></span>
+          </div>
           <p className="board-card-title">{dragRef.current.bug.title}</p>
           <div className="board-card-badges">
             <Badge value={dragRef.current.bug.priority} type="priority" />
