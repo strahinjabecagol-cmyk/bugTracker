@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import db from '../db/database';
 import { validate } from '../middleware/validate';
+import { requireAdmin } from '../middleware/auth';
 
 const router = Router();
 
@@ -30,7 +31,7 @@ router.get('/:id', (req, res) => {
 });
 
 // POST /users
-router.post('/', validate(UserCreateSchema), (req, res) => {
+router.post('/', requireAdmin, validate(UserCreateSchema), (req, res) => {
   const { name, email, role } = req.body as z.infer<typeof UserCreateSchema>;
   try {
     const stmt = db.prepare('INSERT INTO users (name, email, role) VALUES (?, ?, ?)');
@@ -48,7 +49,7 @@ router.post('/', validate(UserCreateSchema), (req, res) => {
 });
 
 // PUT /users/:id
-router.put('/:id', validate(UserUpdateSchema), (req, res) => {
+router.put('/:id', requireAdmin, validate(UserUpdateSchema), (req, res) => {
   const updates = req.body as z.infer<typeof UserUpdateSchema>;
   const existing = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id) as Record<string, unknown> | undefined;
   if (!existing) {
@@ -63,7 +64,7 @@ router.put('/:id', validate(UserUpdateSchema), (req, res) => {
 });
 
 // DELETE /users/:id
-router.delete('/:id', (req, res) => {
+router.delete('/:id', requireAdmin, (req, res) => {
   db.prepare('DELETE FROM users WHERE id = ?').run(req.params.id);
   res.status(204).send();
 });

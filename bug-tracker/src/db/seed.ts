@@ -1,4 +1,5 @@
 import db from './database';
+import bcrypt from 'bcryptjs';
 
 // ── Users ─────────────────────────────────────────────────────────────────────
 const insertUser = db.prepare(`
@@ -215,6 +216,12 @@ const comments = [
 ];
 
 for (const c of comments) insertComment.run(c);
+
+// ── Passwords for real users ───────────────────────────────────────────────────
+const passwordHash = bcrypt.hashSync('test1234', 10);
+const setPassword = db.prepare(`UPDATE users SET password_hash = @hash, role = @role WHERE id = @id`);
+setPassword.run({ hash: passwordHash, role: 'admin',     id: 10 }); // strahinja
+setPassword.run({ hash: passwordHash, role: 'developer', id: 11 }); // klaudije
 
 console.log('Seed complete:');
 console.log(`  ${users.length} users`);

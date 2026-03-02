@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import db from '../db/database';
 import { validate } from '../middleware/validate';
+import { requireAdmin } from '../middleware/auth';
 
 const router = Router();
 
@@ -29,7 +30,7 @@ router.get('/:id', (req, res) => {
 });
 
 // POST /projects
-router.post('/', validate(ProjectCreateSchema), (req, res) => {
+router.post('/', requireAdmin, validate(ProjectCreateSchema), (req, res) => {
   const { name, description } = req.body as z.infer<typeof ProjectCreateSchema>;
   const info = db.prepare('INSERT INTO projects (name, description) VALUES (?, ?)').run(name, description);
   const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(info.lastInsertRowid);
@@ -37,7 +38,7 @@ router.post('/', validate(ProjectCreateSchema), (req, res) => {
 });
 
 // PUT /projects/:id
-router.put('/:id', validate(ProjectUpdateSchema), (req, res) => {
+router.put('/:id', requireAdmin, validate(ProjectUpdateSchema), (req, res) => {
   const updates = req.body as z.infer<typeof ProjectUpdateSchema>;
   const existing = db.prepare('SELECT * FROM projects WHERE id = ?').get(req.params.id) as Record<string, unknown> | undefined;
   if (!existing) {
@@ -52,7 +53,7 @@ router.put('/:id', validate(ProjectUpdateSchema), (req, res) => {
 });
 
 // DELETE /projects/:id
-router.delete('/:id', (req, res) => {
+router.delete('/:id', requireAdmin, (req, res) => {
   db.prepare('DELETE FROM projects WHERE id = ?').run(req.params.id);
   res.status(204).send();
 });

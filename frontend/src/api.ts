@@ -10,8 +10,13 @@ const BASE = '/api';
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     ...options,
   });
+  if (res.status === 401) {
+    window.location.href = '/login';
+    return undefined as T;
+  }
   if (res.status === 204) return undefined as T;
   const data = await res.json();
   if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);

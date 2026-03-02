@@ -1,11 +1,21 @@
 import express, { Request, Response, NextFunction } from 'express';
+import cookieParser from 'cookie-parser';
 import usersRouter    from './routes/users';
 import projectsRouter from './routes/projects';
 import bugsRouter     from './routes/bugs';
 import commentsRouter, { deleteComment } from './routes/comments';
+import authRouter from './routes/auth';
+import { requireAuth } from './middleware/auth';
 
 const app = express();
 app.use(express.json());
+app.use(cookieParser());
+
+// Auth routes — public (no token required)
+app.use('/auth', authRouter);
+
+// All routes below this line require a valid JWT
+app.use(requireAuth);
 
 // Core routes
 app.use('/users',    usersRouter);

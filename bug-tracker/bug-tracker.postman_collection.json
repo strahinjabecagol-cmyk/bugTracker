@@ -1,14 +1,76 @@
 {
   "info": {
     "name": "Bug Tracker API",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "All routes except /auth/login, /auth/logout, and /auth/register require a valid session cookie. Run 'Login' first — Postman will store the httpOnly cookie automatically and send it with every subsequent request."
   },
   "variable": [
     { "key": "baseUrl", "value": "http://localhost:3000" }
   ],
   "item": [
     {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"strahinja.becagol@vegaitglobal.com\",\n  \"password\": \"test1234\"\n}"
+            },
+            "description": "Returns user object and sets httpOnly cookie 'bt_token' (7 day expiry). Postman stores and sends this cookie automatically."
+          }
+        },
+        {
+          "name": "Login as Klaudije (developer)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"klaudije@sbecagol.com\",\n  \"password\": \"test1234\"\n}"
+            },
+            "description": "Login as Klaudije (developer role). Developer cannot delete bugs/projects/users."
+          }
+        },
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/register",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"New User\",\n  \"email\": \"newuser@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "description": "Creates a new user with role 'developer', auto-logs in, and sets the session cookie."
+          }
+        },
+        {
+          "name": "Get current user (me)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/auth/me",
+            "description": "Returns the currently authenticated user from the session cookie. Returns 401 if not logged in."
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/logout",
+            "description": "Clears the session cookie."
+          }
+        }
+      ]
+    },
+    {
       "name": "Users",
+      "description": "Requires authentication. POST, PUT, DELETE require admin role.",
       "item": [
         {
           "name": "Get all users",
@@ -21,11 +83,11 @@
           "name": "Get user by ID",
           "request": {
             "method": "GET",
-            "url": "{{baseUrl}}/users/1"
+            "url": "{{baseUrl}}/users/10"
           }
         },
         {
-          "name": "Create user",
+          "name": "Create user (admin only)",
           "request": {
             "method": "POST",
             "url": "{{baseUrl}}/users",
@@ -33,32 +95,36 @@
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"role\": \"developer\"\n}"
-            }
+            },
+            "description": "Requires admin role. Returns 403 if logged in as developer."
           }
         },
         {
-          "name": "Update user",
+          "name": "Update user (admin only)",
           "request": {
             "method": "PUT",
-            "url": "{{baseUrl}}/users/1",
+            "url": "{{baseUrl}}/users/10",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"John Updated\",\n  \"role\": \"admin\"\n}"
-            }
+            },
+            "description": "Requires admin role. Returns 403 if logged in as developer."
           }
         },
         {
-          "name": "Delete user",
+          "name": "Delete user (admin only)",
           "request": {
             "method": "DELETE",
-            "url": "{{baseUrl}}/users/1"
+            "url": "{{baseUrl}}/users/10",
+            "description": "Requires admin role. Returns 403 if logged in as developer."
           }
         }
       ]
     },
     {
       "name": "Projects",
+      "description": "Requires authentication. POST, PUT, DELETE require admin role.",
       "item": [
         {
           "name": "Get all projects",
@@ -75,7 +141,7 @@
           }
         },
         {
-          "name": "Create project",
+          "name": "Create project (admin only)",
           "request": {
             "method": "POST",
             "url": "{{baseUrl}}/projects",
@@ -83,11 +149,12 @@
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"New Project\",\n  \"description\": \"Project description\"\n}"
-            }
+            },
+            "description": "Requires admin role. Returns 403 if logged in as developer."
           }
         },
         {
-          "name": "Update project",
+          "name": "Update project (admin only)",
           "request": {
             "method": "PUT",
             "url": "{{baseUrl}}/projects/1",
@@ -95,14 +162,16 @@
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Updated Project Name\"\n}"
-            }
+            },
+            "description": "Requires admin role. Returns 403 if logged in as developer."
           }
         },
         {
-          "name": "Delete project",
+          "name": "Delete project (admin only)",
           "request": {
             "method": "DELETE",
-            "url": "{{baseUrl}}/projects/1"
+            "url": "{{baseUrl}}/projects/1",
+            "description": "Requires admin role. Returns 403 if logged in as developer."
           }
         },
         {
@@ -116,6 +185,7 @@
     },
     {
       "name": "Bugs",
+      "description": "Requires authentication. DELETE requires admin role.",
       "item": [
         {
           "name": "Get all bugs",
@@ -146,7 +216,7 @@
           "name": "Get bug by ID",
           "request": {
             "method": "GET",
-            "url": "{{baseUrl}}/bugs/1"
+            "url": "{{baseUrl}}/bugs/26"
           }
         },
         {
@@ -157,7 +227,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"project_id\": 1,\n  \"title\": \"Login button not working\",\n  \"description\": \"Clicking login does nothing\",\n  \"priority\": \"high\",\n  \"severity\": \"major\",\n  \"reporter_id\": 1,\n  \"assignee_id\": 2\n}"
+              "raw": "{\n  \"project_id\": 5,\n  \"title\": \"New bug title\",\n  \"description\": \"Bug description\",\n  \"priority\": \"high\",\n  \"severity\": \"major\",\n  \"reporter_id\": 11,\n  \"assignee_id\": 11\n}"
             }
           }
         },
@@ -165,7 +235,7 @@
           "name": "Update bug",
           "request": {
             "method": "PUT",
-            "url": "{{baseUrl}}/bugs/1",
+            "url": "{{baseUrl}}/bugs/26",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
@@ -174,41 +244,44 @@
           }
         },
         {
-          "name": "Delete bug",
+          "name": "Delete bug (admin only)",
           "request": {
             "method": "DELETE",
-            "url": "{{baseUrl}}/bugs/1"
+            "url": "{{baseUrl}}/bugs/26",
+            "description": "Requires admin role. Returns 403 if logged in as developer."
           }
         }
       ]
     },
     {
       "name": "Comments",
+      "description": "Requires authentication. DELETE requires admin role.",
       "item": [
         {
           "name": "Get comments for bug",
           "request": {
             "method": "GET",
-            "url": "{{baseUrl}}/bugs/1/comments"
+            "url": "{{baseUrl}}/bugs/26/comments"
           }
         },
         {
           "name": "Add comment to bug",
           "request": {
             "method": "POST",
-            "url": "{{baseUrl}}/bugs/1/comments",
+            "url": "{{baseUrl}}/bugs/26/comments",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"user_id\": 1,\n  \"content\": \"Looking into this issue now.\"\n}"
+              "raw": "{\n  \"user_id\": 11,\n  \"content\": \"Looking into this issue now.\"\n}"
             }
           }
         },
         {
-          "name": "Delete comment",
+          "name": "Delete comment (admin only)",
           "request": {
             "method": "DELETE",
-            "url": "{{baseUrl}}/comments/1"
+            "url": "{{baseUrl}}/comments/1",
+            "description": "Requires admin role. Returns 403 if logged in as developer."
           }
         }
       ]

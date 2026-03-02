@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getProjects, createProject, updateProject, deleteProject } from '../api';
 import type { Project } from '../types';
+import { useAuth } from '../context/AuthContext';
 
 type ModalMode = 'create' | 'edit';
 
@@ -16,6 +17,8 @@ export default function ProjectList() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { user: authUser } = useAuth();
+  const isAdmin = authUser?.role === 'admin';
 
   const [modal, setModal] = useState<{ mode: ModalMode; project?: Project } | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
@@ -110,7 +113,7 @@ export default function ProjectList() {
                 <td>
                   <div style={{ display: 'flex', gap: '0.4rem' }}>
                     <button className="btn btn-secondary" onClick={() => openEdit(p)}>Edit</button>
-                    <button className="btn btn-danger" onClick={() => handleDelete(p)}>Delete</button>
+                    {isAdmin && <button className="btn btn-danger" onClick={() => handleDelete(p)}>Delete</button>}
                   </div>
                 </td>
               </tr>

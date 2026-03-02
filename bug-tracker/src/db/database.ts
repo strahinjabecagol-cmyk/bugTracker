@@ -51,4 +51,11 @@ db.exec(`
   );
 `);
 
+// Add password_hash column if it doesn't exist yet (safe migration)
+try {
+  db.exec(`ALTER TABLE users ADD COLUMN password_hash TEXT`);
+} catch {
+  // column already exists — ignore
+}
+
 export default db;
