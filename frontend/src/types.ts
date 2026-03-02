@@ -18,6 +18,7 @@ export interface Bug {
   project_id: number;
   title: string;
   description: string;
+  type: 'bug' | 'task';
   status: 'open' | 'in_progress' | 'resolved' | 'closed';
   priority: 'low' | 'medium' | 'high' | 'critical';
   severity: 'minor' | 'major' | 'critical' | 'blocker';
@@ -40,6 +41,7 @@ export interface BugFilters {
   status?: string;
   priority?: string;
   severity?: string;
+  type?: string;
   project_id?: number;
   assignee_id?: number;
 }
@@ -48,6 +50,7 @@ export interface CreateBugData {
   project_id: number;
   title: string;
   description?: string;
+  type?: Bug['type'];
   priority?: Bug['priority'];
   severity?: Bug['severity'];
   reporter_id: number;
@@ -57,6 +60,7 @@ export interface CreateBugData {
 export interface UpdateBugData {
   title?: string;
   description?: string;
+  type?: Bug['type'];
   status?: Bug['status'];
   priority?: Bug['priority'];
   severity?: Bug['severity'];

@@ -1,6 +1,6 @@
 interface BadgeProps {
   value: string;
-  type: 'status' | 'priority' | 'severity';
+  type: 'status' | 'priority' | 'severity' | 'type';
 }
 
 export default function Badge({ value, type }: BadgeProps) {

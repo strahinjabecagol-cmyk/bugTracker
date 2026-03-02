@@ -27,6 +27,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 export function getBugs(filters?: BugFilters): Promise<Bug[]> {
   const params = new URLSearchParams();
   if (filters?.status)     params.set('status', filters.status);
+  if (filters?.type)       params.set('type', filters.type);
   if (filters?.priority)   params.set('priority', filters.priority);
   if (filters?.severity)   params.set('severity', filters.severity);
   if (filters?.project_id) params.set('project_id', String(filters.project_id));

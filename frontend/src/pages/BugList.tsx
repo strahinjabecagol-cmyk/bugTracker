@@ -5,15 +5,17 @@ import type { Bug } from '../types';
 import Badge from '../components/Badge';
 import { useProject } from '../context/ProjectContext';
 
-type SortCol = 'id' | 'title' | 'project' | 'status' | 'priority' | 'severity';
+type SortCol = 'id' | 'title' | 'project' | 'type' | 'status' | 'priority' | 'severity';
 type SortDir = 'asc' | 'desc';
 type Priority = Bug['priority'];
 type Severity = Bug['severity'];
 type Status   = Bug['status'];
+type BugType  = Bug['type'];
 
 const PRIORITIES: Priority[] = ['low', 'medium', 'high', 'critical'];
 const SEVERITIES: Severity[] = ['minor', 'major', 'critical', 'blocker'];
 const STATUSES:   Status[]   = ['open', 'in_progress', 'resolved', 'closed'];
+const TYPES:      BugType[]  = ['bug', 'task'];
 const PRIORITY_ORDER = { low: 0, medium: 1, high: 2, critical: 3 };
 const SEVERITY_ORDER = { minor: 0, major: 1, critical: 2, blocker: 3 };
 const STATUS_ORDER   = { open: 0, in_progress: 1, resolved: 2, closed: 3 };
@@ -56,7 +58,7 @@ function MultiDropdown<T extends string>({ hook, items, singular, badgeType }: {
   hook: FilterHook<T>;
   items: T[];
   singular: string;
-  badgeType: 'priority' | 'severity' | 'status';
+  badgeType: 'priority' | 'severity' | 'status' | 'type';
 }) {
   return (
     <div className="priority-dropdown" ref={hook.ref}>
@@ -95,6 +97,7 @@ export default function BugList() {
   const priority = useMultiFilter<Priority>();
   const severity = useMultiFilter<Severity>();
   const status   = useMultiFilter<Status>();
+  const bugType  = useMultiFilter<BugType>();
 
   useEffect(() => {
     setLoading(true);
@@ -115,7 +118,8 @@ export default function BugList() {
     const filtered = bugs
       .filter((b) => status.selected.size   === 0 || status.selected.has(b.status))
       .filter((b) => priority.selected.size === 0 || priority.selected.has(b.priority))
-      .filter((b) => severity.selected.size === 0 || severity.selected.has(b.severity));
+      .filter((b) => severity.selected.size === 0 || severity.selected.has(b.severity))
+      .filter((b) => bugType.selected.size  === 0 || bugType.selected.has(b.type));
 
     return [...filtered].sort((a, b) => {
       let cmp = 0;
@@ -123,13 +127,14 @@ export default function BugList() {
         case 'id':       cmp = a.id - b.id; break;
         case 'title':    cmp = a.title.localeCompare(b.title); break;
         case 'project':  cmp = pName(a.project_id).localeCompare(pName(b.project_id)); break;
+        case 'type':     cmp = a.type.localeCompare(b.type); break;
         case 'status':   cmp = STATUS_ORDER[a.status] - STATUS_ORDER[b.status]; break;
         case 'priority': cmp = PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]; break;
         case 'severity': cmp = SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]; break;
       }
       return sortDir === 'asc' ? cmp : -cmp;
     });
-  }, [bugs, status.selected, priority.selected, severity.selected, sortCol, sortDir, projects]);
+  }, [bugs, status.selected, priority.selected, severity.selected, bugType.selected, sortCol, sortDir, projects]);
 
   const projectName = (id: number) => projects.find((p) => p.id === id)?.name ?? `#${id}`;
 
@@ -149,11 +154,12 @@ export default function BugList() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1>Bugs</h1>
-        <Link to="/bugs/new" className="btn btn-primary">+ New Bug</Link>
+        <h1>Items</h1>
+        <Link to="/bugs/new" className="btn btn-primary">+ New Item</Link>
       </div>
 
       <div className="filters">
+        <MultiDropdown hook={bugType}  items={TYPES}      singular="type"     badgeType="type"     />
         <MultiDropdown hook={status}   items={STATUSES}   singular="status"   badgeType="status"   />
         <MultiDropdown hook={priority} items={PRIORITIES} singular="priority" badgeType="priority" />
         <MultiDropdown hook={severity} items={SEVERITIES} singular="severity" badgeType="severity" />
@@ -169,6 +175,7 @@ export default function BugList() {
               <Th col="id">ID</Th>
               <Th col="title">Title</Th>
               <Th col="project">Project</Th>
+              <Th col="type">Type</Th>
               <Th col="status">Status</Th>
               <Th col="priority">Priority</Th>
               <Th col="severity">Severity</Th>
@@ -176,12 +183,13 @@ export default function BugList() {
           </thead>
           <tbody>
             {sorted.length === 0 ? (
-              <tr><td colSpan={6} style={{ textAlign: 'center', color: '#888' }}>No bugs found</td></tr>
+              <tr><td colSpan={7} style={{ textAlign: 'center', color: '#888' }}>No bugs found</td></tr>
             ) : sorted.map((bug) => (
               <tr key={bug.id}>
                 <td>#{bug.id}</td>
                 <td><Link to={`/bugs/${bug.id}`}>{bug.title}</Link></td>
                 <td>{projectName(bug.project_id)}</td>
+                <td><Badge value={bug.type} type="type" /></td>
                 <td><Badge value={bug.status} type="status" /></td>
                 <td><Badge value={bug.priority} type="priority" /></td>
                 <td><Badge value={bug.severity} type="severity" /></td>

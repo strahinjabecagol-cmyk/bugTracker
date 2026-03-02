@@ -14,6 +14,7 @@ export default function BugForm() {
   const [description, setDescription] = useState('');
   const [projectId, setProjectId] = useState(selectedProjectId);
   const [reporterId, setReporterId] = useState('');
+  const [type, setType] = useState<'bug' | 'task'>('bug');
   const [priority, setPriority] = useState<'low' | 'medium' | 'high' | 'critical'>('medium');
   const [severity, setSeverity] = useState<'minor' | 'major' | 'critical' | 'blocker'>('major');
   const [assigneeId, setAssigneeId] = useState('');
@@ -41,6 +42,7 @@ export default function BugForm() {
         project_id: Number(projectId),
         title,
         description,
+        type,
         priority,
         severity,
         reporter_id: Number(reporterId),
@@ -48,7 +50,7 @@ export default function BugForm() {
       });
       navigate(`/bugs/${bug.id}`);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to create bug');
+      setError(e instanceof Error ? e.message : 'Failed to create item');
     } finally {
       setSubmitting(false);
     }
@@ -61,7 +63,7 @@ export default function BugForm() {
       </div>
 
       <div className="form-card">
-        <h2>New Bug</h2>
+        <h2>New Item</h2>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Title *</label>
@@ -112,6 +114,14 @@ export default function BugForm() {
 
           <div className="form-row">
             <div className="form-group">
+              <label>Type</label>
+              <select value={type} onChange={(e) => setType(e.target.value as typeof type)}>
+                <option value="bug">Bug</option>
+                <option value="task">Task</option>
+              </select>
+            </div>
+
+            <div className="form-group">
               <label>Priority</label>
               <select value={priority} onChange={(e) => setPriority(e.target.value as typeof priority)}>
                 <option value="low">Low</option>
@@ -136,7 +146,7 @@ export default function BugForm() {
 
           <div className="form-actions">
             <button type="submit" className="btn btn-primary" disabled={submitting}>
-              {submitting ? 'Creating...' : 'Create Bug'}
+              {submitting ? 'Creating...' : 'Create Item'}
             </button>
             <button type="button" className="btn btn-secondary" onClick={() => navigate(-1)}>Cancel</button>
           </div>

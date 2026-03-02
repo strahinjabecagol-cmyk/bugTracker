@@ -393,6 +393,9 @@ h4 { margin: 0 0 0.5rem; font-size: 0.875rem; font-weight: 600; }
 .badge-severity-critical { background: #fef2f2; color: #be123c; border-color: #fda4af; }
 .badge-severity-blocker  { background: #fdf4ff; color: #7e22ce; border-color: #e9d5ff; }
 
+.badge-type-bug  { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+.badge-type-task { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+
 .badge-role-admin     { background: #ede9fe; color: #6d28d9; border-color: #ddd6fe; }
 .badge-role-developer { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
 .badge-role-tester    { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }

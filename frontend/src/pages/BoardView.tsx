@@ -146,7 +146,7 @@ export default function BoardView() {
     <div className="page" style={{ userSelect: activeDragId !== null ? 'none' : undefined }}>
       <div className="page-header">
         <h1>Board</h1>
-        <Link to="/bugs/new" className="btn btn-primary">+ New Bug</Link>
+        <Link to="/bugs/new" className="btn btn-primary">+ New Item</Link>
       </div>
 
       {error && <p className="error">{error}</p>}
@@ -182,6 +182,7 @@ export default function BoardView() {
                           <span className="board-card-id">#{bug.id}</span>
                           <p className="board-card-title">{bug.title}</p>
                           <div className="board-card-badges">
+                            <Badge value={bug.type} type="type" />
                             <Badge value={bug.priority} type="priority" />
                             <Badge value={bug.severity} type="severity" />
                           </div>
@@ -209,6 +210,7 @@ export default function BoardView() {
           <span className="board-card-id">#{dragRef.current.bug.id}</span>
           <p className="board-card-title">{dragRef.current.bug.title}</p>
           <div className="board-card-badges">
+            <Badge value={dragRef.current.bug.type} type="type" />
             <Badge value={dragRef.current.bug.priority} type="priority" />
             <Badge value={dragRef.current.bug.severity} type="severity" />
           </div>

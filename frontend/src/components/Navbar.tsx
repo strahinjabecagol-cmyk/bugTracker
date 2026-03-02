@@ -29,7 +29,7 @@ export default function Navbar() {
       <div className="navbar-links">
         <NavLink to="/" end className={({ isActive }) => isActive ? 'active' : ''}>Bugs</NavLink>
         <NavLink to="/board" className={({ isActive }) => isActive ? 'active' : ''}>Board</NavLink>
-        <NavLink to="/bugs/new" className={({ isActive }) => isActive ? 'active' : ''}>New Bug</NavLink>
+        <NavLink to="/bugs/new" className={({ isActive }) => isActive ? 'active' : ''}>New Item</NavLink>
         <NavLink to="/projects" className={({ isActive }) => isActive ? 'active' : ''}>Projects</NavLink>
         <NavLink to="/users" className={({ isActive }) => isActive ? 'active' : ''}>Users</NavLink>
       </div>

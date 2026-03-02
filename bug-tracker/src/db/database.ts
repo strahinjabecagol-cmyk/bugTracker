@@ -58,6 +58,13 @@ try {
   // column already exists — ignore
 }
 
+// Add type column to bugs if it doesn't exist yet (safe migration)
+try {
+  db.exec(`ALTER TABLE bugs ADD COLUMN type TEXT NOT NULL DEFAULT 'bug' CHECK(type IN ('bug', 'task'))`);
+} catch {
+  // column already exists — ignore
+}
+
 // System "Deleted User" — comments and bugs from deleted users are reassigned here
 db.prepare(`
   INSERT OR IGNORE INTO users (name, email, role, password_hash)

@@ -10,6 +10,7 @@ const BugCreateSchema = z.object({
   project_id:  z.number().int().positive(),
   title:       z.string().min(1),
   description: z.string().optional().default(''),
+  type:        z.enum(['bug', 'task']).optional().default('bug'),
   priority:    z.enum(['low', 'medium', 'high', 'critical']).optional().default('medium'),
   severity:    z.enum(['minor', 'major', 'critical', 'blocker']).optional().default('major'),
   reporter_id: z.number().int().positive(),
@@ -19,6 +20,7 @@ const BugCreateSchema = z.object({
 const BugUpdateSchema = z.object({
   title:       z.string().min(1).optional(),
   description: z.string().optional(),
+  type:        z.enum(['bug', 'task']).optional(),
   status:      z.enum(['open', 'in_progress', 'resolved', 'closed']).optional(),
   priority:    z.enum(['low', 'medium', 'high', 'critical']).optional(),
   severity:    z.enum(['minor', 'major', 'critical', 'blocker']).optional(),
@@ -27,7 +29,7 @@ const BugUpdateSchema = z.object({
 
 // GET /bugs  or  GET /projects/:id/bugs
 router.get('/', (req: Request, res) => {
-  const { status, priority, severity, project_id, assignee_id } = req.query as Record<string, string | undefined>;
+  const { status, priority, severity, project_id, assignee_id, type } = req.query as Record<string, string | undefined>;
 
   // When mounted under /projects/:id, mergeParams makes req.params.id available
   const projectIdParam = (req.params as { id?: string }).id;
@@ -41,6 +43,7 @@ router.get('/', (req: Request, res) => {
   if (priority)            { conditions.push('priority = ?');    values.push(priority); }
   if (severity)            { conditions.push('severity = ?');    values.push(severity); }
   if (assignee_id)         { conditions.push('assignee_id = ?'); values.push(assignee_id); }
+  if (type)                { conditions.push('type = ?');        values.push(type); }
 
   const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
   const bugs = db.prepare(`SELECT * FROM bugs ${where} ORDER BY id`).all(...values);
@@ -59,13 +62,13 @@ router.get('/:id', (req, res) => {
 
 // POST /bugs
 router.post('/', validate(BugCreateSchema), (req, res) => {
-  const { project_id, title, description, priority, severity, reporter_id, assignee_id } =
+  const { project_id, title, description, type, priority, severity, reporter_id, assignee_id } =
     req.body as z.infer<typeof BugCreateSchema>;
 
   const info = db.prepare(`
-    INSERT INTO bugs (project_id, title, description, priority, severity, reporter_id, assignee_id)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `).run(project_id, title, description, priority, severity, reporter_id, assignee_id ?? null);
+    INSERT INTO bugs (project_id, title, description, type, priority, severity, reporter_id, assignee_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(project_id, title, description, type, priority, severity, reporter_id, assignee_id ?? null);
 
   const bug = db.prepare('SELECT * FROM bugs WHERE id = ?').get(info.lastInsertRowid);
   res.status(201).json(bug);
@@ -82,11 +85,11 @@ router.put('/:id', validate(BugUpdateSchema), (req, res) => {
   const merged = { ...existing, ...updates };
   db.prepare(`
     UPDATE bugs
-    SET title = ?, description = ?, status = ?, priority = ?, severity = ?,
+    SET title = ?, description = ?, type = ?, status = ?, priority = ?, severity = ?,
         assignee_id = ?, updated_at = datetime('now')
     WHERE id = ?
   `).run(
-    merged.title, merged.description, merged.status,
+    merged.title, merged.description, merged.type, merged.status,
     merged.priority, merged.severity, merged.assignee_id,
     req.params.id,
   );

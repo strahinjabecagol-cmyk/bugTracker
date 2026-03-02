@@ -53,6 +53,7 @@ export default function BugDetail() {
       const updated = await updateBug(bugId, {
         title: editData.title,
         description: editData.description,
+        type: editData.type,
         status: editData.status,
         priority: editData.priority,
         severity: editData.severity,
@@ -129,6 +130,16 @@ export default function BugDetail() {
             </div>
             <div className="form-row">
               <div className="form-group">
+                <label>Type</label>
+                <select
+                  value={editData.type ?? 'bug'}
+                  onChange={(e) => setEditData((d) => ({ ...d, type: e.target.value as Bug['type'] }))}
+                >
+                  <option value="bug">Bug</option>
+                  <option value="task">Task</option>
+                </select>
+              </div>
+              <div className="form-group">
                 <label>Status</label>
                 <select
                   value={editData.status ?? ''}
@@ -188,6 +199,7 @@ export default function BugDetail() {
           <>
             <h2>#{bug.id} — {bug.title}</h2>
             <div className="bug-meta">
+              <span>Type: <Badge value={bug.type} type="type" /></span>
               <span>Project: <strong>{projectName(bug.project_id)}</strong></span>
               <span>Reporter: <strong>{userName(bug.reporter_id)}</strong></span>
               <span>Assignee: <strong>{userName(bug.assignee_id)}</strong></span>
