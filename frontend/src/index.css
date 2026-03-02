@@ -571,12 +571,29 @@ h4 { margin: 0 0 0.5rem; font-size: 0.875rem; font-weight: 600; }
 }
 
 /* ─── Board ──────────────────────────────────────── */
+.board-page {
+  background: #0f172a;
+  min-height: 100vh;
+  margin: 0;
+  padding: 1.5rem 2rem;
+}
+.board-page h1 { color: #f1f5f9; }
+
 .board {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
   align-items: start;
 }
+
+.board-page .board-column {
+  background: #1e293b;
+  border-color: #334155;
+}
+.board-page .board-column-title { color: #94a3b8; }
+.board-page .board-column-count { background: #334155; color: #64748b; }
+.board-page .board-empty { color: #475569; }
+.board-page .board-column-over { background: #1e3a5f; border-color: #3b82f6; }
 
 .board-column {
   background: var(--surface-2);
@@ -620,6 +637,13 @@ h4 { margin: 0 0 0.5rem; font-size: 0.875rem; font-weight: 600; }
 
 .board-cards { display: flex; flex-direction: column; gap: 0.1rem; }
 
+.board-page .board-card { background: #1e293b; border-color: #2d3f55; }
+.board-page .board-card-bug  { background: #1e1515; border-color: #7f1d1d; }
+.board-page .board-card-task { background: #111827; border-color: #1e3a5f; }
+.board-page .board-card-title { color: #cbd5e1; }
+.board-page .board-card-badges .badge { background: #1e293b; color: #cbd5e1; border-color: #2d3f55; }
+.board-page .board-card:hover { box-shadow: none; border-color: #475569; }
+
 .board-card {
   background: var(--surface);
   border-radius: 0;
@@ -634,23 +658,24 @@ h4 { margin: 0 0 0.5rem; font-size: 0.875rem; font-weight: 600; }
 }
 .board-card > * { transform: skewX(12deg); }
 .board-card:hover { box-shadow: var(--shadow); border-color: #c7d2fe; }
-.board-card-bug  { border-color: #fca5a5; background: #fff5f5; }
-.board-card-task { border-color: hsla(212, 100%, 50%, 0.822); background: #eff6ff; }
+.board-card-bug  { border-color: #f87171; background: #2d1f1f; }
+.board-card-task { border-color: #60a5fa; background: #1a2535; }
 .board-card-id { font-size: 0.7rem; color: var(--text-subtle); font-weight: 600; display: inline-block; }
 .board-card-title { margin: 0.25rem 0 0.625rem; font-size: 0.85rem; font-weight: 500; color: var(--text); line-height: 1.4; }
 .board-card-badges { display: flex; gap: 0.3rem; flex-wrap: wrap; }
-.board-card-badges .badge { background: #f1f5f9; color: #94a3b8; border-color: #e2e8f0; border-radius: 0; transform: skewX(-12deg); border-left-width: 3px; }
+.board-card-badges .badge { background: #f1f5f9; color: #94a3b8; border-color: #e2e8f0; border-radius: 0; transform: skewX(-12deg); position: relative; padding-left: calc(0.4rem + 5px); }
 .board-card-badges .badge > span { display: inline-block; transform: skewX(12deg); }
+.board-card-badges .badge::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--stripe, transparent); }
 
-.board-card-badges .badge-priority-low      { border-left-color: #16a34a; }
-.board-card-badges .badge-priority-medium   { border-left-color: #ca8a04; }
-.board-card-badges .badge-priority-high     { border-left-color: #ea580c; }
-.board-card-badges .badge-priority-critical { border-left-color: #dc2626; }
+.board-card-badges .badge-priority-low      { --stripe: #86efac; }
+.board-card-badges .badge-priority-medium   { --stripe: #fde047; }
+.board-card-badges .badge-priority-high     { --stripe: #fdba74; }
+.board-card-badges .badge-priority-critical { --stripe: #fca5a5; }
 
-.board-card-badges .badge-severity-minor    { border-left-color: #16a34a; }
-.board-card-badges .badge-severity-major    { border-left-color: #ca8a04; }
-.board-card-badges .badge-severity-critical { border-left-color: #ea580c; }
-.board-card-badges .badge-severity-blocker  { border-left-color: #dc2626; }
+.board-card-badges .badge-severity-minor    { --stripe: #86efac; }
+.board-card-badges .badge-severity-major    { --stripe: #fde047; }
+.board-card-badges .badge-severity-critical { --stripe: #fdba74; }
+.board-card-badges .badge-severity-blocker  { --stripe: #fca5a5; }
 
 .board-empty { color: var(--text-subtle); font-size: 0.82rem; text-align: center; padding: 2rem 0; margin: 0; }
 

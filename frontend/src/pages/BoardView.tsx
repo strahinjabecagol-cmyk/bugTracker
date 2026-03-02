@@ -143,7 +143,7 @@ export default function BoardView() {
   const byStatus = (status: Bug['status']) => bugs.filter((b) => b.status === status);
 
   return (
-    <div className="page" style={{ userSelect: activeDragId !== null ? 'none' : undefined }}>
+    <div className="page board-page" style={{ userSelect: activeDragId !== null ? 'none' : undefined }}>
       <div className="page-header">
         <h1>Board</h1>
         <Link to="/bugs/new" className="btn btn-primary">+ New Item</Link>
