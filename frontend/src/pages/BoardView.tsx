@@ -164,8 +164,8 @@ export default function BoardView() {
                 className={`board-column${isOver ? ' board-column-over' : ''}`}
               >
                 <div className="board-column-header">
-                  <span className="board-column-title">{label}</span>
-                  <span className="board-column-count">{cards.length}</span>
+                  <span className="board-column-title"><span style={{ display: 'inline-block', transform: 'skewX(12deg)' }}>{label}</span></span>
+                  <span className="board-column-count"><span style={{ display: 'inline-block', transform: 'skewX(12deg)' }}>{cards.length}</span></span>
                 </div>
                 <div className="board-cards">
                   {cards.length === 0 ? (

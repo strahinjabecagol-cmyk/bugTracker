@@ -589,9 +589,10 @@ h4 { margin: 0 0 0.5rem; font-size: 0.875rem; font-weight: 600; }
 .board-page .board-column {
   background: #1e293b;
   border-color: #334155;
+  border-radius: 0;
 }
-.board-page .board-column-title { color: #94a3b8; }
-.board-page .board-column-count { background: #334155; color: #64748b; }
+.board-page .board-column-title { color: #94a3b8; transform: skewX(-12deg); display: inline-block; background: #334155; padding: 0.1rem 0.6rem; }
+.board-page .board-column-count { background: #334155; color: #64748b; border-radius: 0; transform: skewX(-12deg); display: inline-block; }
 .board-page .board-empty { color: #475569; }
 .board-page .board-column-over { background: #1e3a5f; border-color: #3b82f6; }
 
@@ -614,6 +615,10 @@ h4 { margin: 0 0 0.5rem; font-size: 0.875rem; font-weight: 600; }
   padding: 0.125rem 0.25rem 0.625rem;
   border-bottom: 1.5px solid var(--border);
   margin-bottom: 0.125rem;
+}
+.board-page .board-column-header {
+  justify-content: space-between;
+  border-bottom-color: #334155;
 }
 
 .board-column-title {
