@@ -66,7 +66,7 @@ function MultiDropdown<T extends string>({ hook, items, singular, badgeType }: {
         className={`priority-dropdown-trigger${hook.open ? ' open' : ''}${hook.selected.size > 0 ? ' has-selection' : ''}`}
         onClick={() => hook.setOpen((o) => !o)}
       >
-        {hook.label(singular)}
+        <span>{hook.label(singular)}</span>
         {hook.selected.size > 0
           ? <span className="dropdown-clear" onClick={(e) => { e.stopPropagation(); hook.clear(); }}>×</span>
           : <span className="dropdown-chevron">▾</span>
@@ -75,10 +75,15 @@ function MultiDropdown<T extends string>({ hook, items, singular, badgeType }: {
       {hook.open && (
         <div className="priority-dropdown-menu">
           {items.map((v) => (
-            <label key={v} className="priority-dropdown-item">
-              <input type="checkbox" checked={hook.selected.has(v)} onChange={() => hook.toggle(v)} />
-              <span className={`badge badge-${badgeType}-${v.replace('_', '-')}`}>{v.replace('_', ' ')}</span>
-            </label>
+            <div
+              key={v}
+              className={`priority-dropdown-item${hook.selected.has(v) ? ' active' : ''}`}
+              onClick={() => hook.toggle(v)}
+            >
+              <span className={`badge badge-${badgeType}-${v.replace('_', '-')}`}>
+                <span>{v.replace('_', ' ')}</span>
+              </span>
+            </div>
           ))}
         </div>
       )}
@@ -98,6 +103,11 @@ export default function BugList() {
   const severity = useMultiFilter<Severity>();
   const status   = useMultiFilter<Status>();
   const bugType  = useMultiFilter<BugType>();
+
+  useEffect(() => {
+    document.body.style.background = '#0f172a';
+    return () => { document.body.style.background = ''; };
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -152,10 +162,16 @@ export default function BugList() {
   }
 
   return (
-    <div className="page">
+    <div className="page items-page">
       <div className="page-header">
-        <h1>Items</h1>
-        <Link to="/bugs/new" className="btn btn-primary">+ New Item</Link>
+        <h1 className="board-heading">
+          <span>
+            {selectedProjectId
+              ? `${projects.find((p) => String(p.id) === selectedProjectId)?.name ?? ''} Items`
+              : 'Items'}
+          </span>
+        </h1>
+        <Link to="/bugs/new" className="btn btn-primary board-btn"><span style={{ display: 'inline-block', transform: 'skewX(12deg)' }}>+ New Item</span></Link>
       </div>
 
       <div className="filters">
@@ -188,7 +204,7 @@ export default function BugList() {
               <tr key={bug.id}>
                 <td>#{bug.id}</td>
                 <td><Link to={`/bugs/${bug.id}`}>{bug.title}</Link></td>
-                <td>{projectName(bug.project_id)}</td>
+                <td><span className="project-pill"><span>{projectName(bug.project_id)}</span></span></td>
                 <td><Badge value={bug.type} type="type" /></td>
                 <td><Badge value={bug.status} type="status" /></td>
                 <td><Badge value={bug.priority} type="priority" /></td>
