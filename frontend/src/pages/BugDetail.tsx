@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getBug, updateBug, deleteBug, getComments, addComment, getUsers, getProjects } from '../api';
 import type { Bug, Comment, User, Project } from '../types';
 import { useAuth } from '../context/AuthContext';
+import SidebarDropdown from '../components/SidebarDropdown';
 
 export default function BugDetail() {
   const { id } = useParams<{ id: string }>();
@@ -159,50 +160,51 @@ export default function BugDetail() {
           </div>
 
           <div className="detail-card-sidebar">
-            <div className="form-group">
-              <label>Type</label>
-              <select value={editData.type ?? 'bug'} onChange={(e) => setEditData((d) => ({ ...d, type: e.target.value as Bug['type'] }))}>
-                <option value="bug">Bug</option>
-                <option value="task">Task</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Status</label>
-              <select value={editData.status ?? ''} onChange={(e) => setEditData((d) => ({ ...d, status: e.target.value as Bug['status'] }))}>
-                <option value="open">Open</option>
-                <option value="in_progress">In Progress</option>
-                <option value="resolved">Resolved</option>
-                <option value="closed">Closed</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Priority</label>
-              <select value={editData.priority ?? ''} onChange={(e) => setEditData((d) => ({ ...d, priority: e.target.value as Bug['priority'] }))}>
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="critical">Critical</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Severity</label>
-              <select value={editData.severity ?? ''} onChange={(e) => setEditData((d) => ({ ...d, severity: e.target.value as Bug['severity'] }))}>
-                <option value="minor">Minor</option>
-                <option value="major">Major</option>
-                <option value="critical">Critical</option>
-                <option value="blocker">Blocker</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Assignee</label>
-              <select
-                value={editData.assignee_id ?? ''}
-                onChange={(e) => setEditData((d) => ({ ...d, assignee_id: e.target.value ? Number(e.target.value) : null }))}
-              >
-                <option value="">Unassigned</option>
-                {users.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
-              </select>
-            </div>
+            <SidebarDropdown
+              label="Type"
+              value={editData.type}
+              options={[{ value: 'bug', label: 'Bug' }, { value: 'task', label: 'Task' }]}
+              onChange={(v) => setEditData((d) => ({ ...d, type: v as Bug['type'] }))}
+            />
+            <SidebarDropdown
+              label="Status"
+              value={editData.status}
+              options={[
+                { value: 'open', label: 'Open' },
+                { value: 'in_progress', label: 'In Progress' },
+                { value: 'resolved', label: 'Resolved' },
+                { value: 'closed', label: 'Closed' },
+              ]}
+              onChange={(v) => setEditData((d) => ({ ...d, status: v as Bug['status'] }))}
+            />
+            <SidebarDropdown
+              label="Priority"
+              value={editData.priority}
+              options={[
+                { value: 'low', label: 'Low' },
+                { value: 'medium', label: 'Medium' },
+                { value: 'high', label: 'High' },
+                { value: 'critical', label: 'Critical' },
+              ]}
+              onChange={(v) => setEditData((d) => ({ ...d, priority: v as Bug['priority'] }))}
+            />
+            <SidebarDropdown
+              label="Severity"
+              value={editData.severity}
+              options={[
+                { value: 'minor', label: 'Minor' },
+                { value: 'major', label: 'Major' },
+                { value: 'critical', label: 'Critical' },
+                { value: 'blocker', label: 'Blocker' },
+              ]}
+              onChange={(v) => setEditData((d) => ({ ...d, severity: v as Bug['severity'] }))}
+            />
+            <SidebarDropdown
+              label="Assignee"
+              value={editData.assignee_id ? String(editData.assignee_id) : ''}
+              options={[{ value: '', label: 'Unassigned' }, ...users.map((u) => ({ value: String(u.id), label: u.name }))]}
+              onChange={(v) => setEditData((d) => ({ ...d, assignee_id: v ? Number(v) : null }))}
+            />
           </div>
         </div>
       </div>

@@ -4,6 +4,7 @@ import { createBug, getProjects, getUsers } from '../api';
 import type { Project, User } from '../types';
 import { useProject } from '../context/ProjectContext';
 import { useAuth } from '../context/AuthContext';
+import SidebarDropdown from '../components/SidebarDropdown';
 
 export default function BugForm() {
   const navigate = useNavigate();
@@ -97,19 +98,21 @@ export default function BugForm() {
           <div className="detail-card-body">
             <div className="detail-card-main">
               <div style={{ display: 'flex', gap: '1rem' }}>
-                <div className="form-group" style={{ maxWidth: '220px' }}>
-                  <label>Project *</label>
-                  <select value={projectId} onChange={(e) => setProjectId(e.target.value)} required>
-                    <option value="">Select project...</option>
-                    {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-                  </select>
+                <div style={{ maxWidth: '220px', flex: 1 }}>
+                  <SidebarDropdown
+                    label="Project *"
+                    value={projectId as string}
+                    options={[{ value: '', label: 'Select project...' }, ...projects.map((p) => ({ value: String(p.id), label: p.name }))]}
+                    onChange={(v) => setProjectId(v)}
+                  />
                 </div>
-                <div className="form-group" style={{ maxWidth: '160px' }}>
-                  <label>Type</label>
-                  <select value={type} onChange={(e) => setType(e.target.value as typeof type)}>
-                    <option value="bug">Bug</option>
-                    <option value="task">Task</option>
-                  </select>
+                <div style={{ maxWidth: '160px', flex: 1 }}>
+                  <SidebarDropdown
+                    label="Type"
+                    value={type}
+                    options={[{ value: 'bug', label: 'Bug' }, { value: 'task', label: 'Task' }]}
+                    onChange={(v) => setType(v as typeof type)}
+                  />
                 </div>
               </div>
               <div className="form-group" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -124,38 +127,40 @@ export default function BugForm() {
             </div>
 
             <div className="detail-card-sidebar">
-              <div className="form-group">
-                <label>Reporter *</label>
-                <select value={reporterId} onChange={(e) => setReporterId(e.target.value)} required>
-                  <option value="">Select reporter...</option>
-                  {users.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
-                </select>
-              </div>
-              <div className="form-group">
-                <label>Assignee</label>
-                <select value={assigneeId} onChange={(e) => setAssigneeId(e.target.value)}>
-                  <option value="">Unassigned</option>
-                  {users.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
-                </select>
-              </div>
-              <div className="form-group">
-                <label>Priority</label>
-                <select value={priority} onChange={(e) => setPriority(e.target.value as typeof priority)}>
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                  <option value="critical">Critical</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label>Severity</label>
-                <select value={severity} onChange={(e) => setSeverity(e.target.value as typeof severity)}>
-                  <option value="minor">Minor</option>
-                  <option value="major">Major</option>
-                  <option value="critical">Critical</option>
-                  <option value="blocker">Blocker</option>
-                </select>
-              </div>
+              <SidebarDropdown
+                label="Reporter *"
+                value={reporterId}
+                options={[{ value: '', label: 'Select reporter...' }, ...users.map((u) => ({ value: String(u.id), label: u.name }))]}
+                onChange={(v) => setReporterId(v)}
+              />
+              <SidebarDropdown
+                label="Assignee"
+                value={assigneeId}
+                options={[{ value: '', label: 'Unassigned' }, ...users.map((u) => ({ value: String(u.id), label: u.name }))]}
+                onChange={(v) => setAssigneeId(v)}
+              />
+              <SidebarDropdown
+                label="Priority"
+                value={priority}
+                options={[
+                  { value: 'low', label: 'Low' },
+                  { value: 'medium', label: 'Medium' },
+                  { value: 'high', label: 'High' },
+                  { value: 'critical', label: 'Critical' },
+                ]}
+                onChange={(v) => setPriority(v as typeof priority)}
+              />
+              <SidebarDropdown
+                label="Severity"
+                value={severity}
+                options={[
+                  { value: 'minor', label: 'Minor' },
+                  { value: 'major', label: 'Major' },
+                  { value: 'critical', label: 'Critical' },
+                  { value: 'blocker', label: 'Blocker' },
+                ]}
+                onChange={(v) => setSeverity(v as typeof severity)}
+              />
             </div>
           </div>
         </div>
