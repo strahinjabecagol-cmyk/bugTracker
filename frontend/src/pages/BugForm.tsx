@@ -10,6 +10,7 @@ export default function BugForm() {
   const navigate = useNavigate();
   const { selectedProjectId } = useProject();
   const { user: authUser } = useAuth();
+  const isAdmin = authUser?.role === 'admin';
   const [projects, setProjects] = useState<Project[]>([]);
   const [users, setUsers] = useState<User[]>([]);
 
@@ -127,12 +128,21 @@ export default function BugForm() {
             </div>
 
             <div className="detail-card-sidebar">
-              <SidebarDropdown
-                label="Reporter *"
-                value={reporterId}
-                options={[{ value: '', label: 'Select reporter...' }, ...users.map((u) => ({ value: String(u.id), label: u.name }))]}
-                onChange={(v) => setReporterId(v)}
-              />
+              {isAdmin ? (
+                <SidebarDropdown
+                  label="Reporter *"
+                  value={reporterId}
+                  options={[{ value: '', label: 'Select reporter...' }, ...users.map((u) => ({ value: String(u.id), label: u.name }))]}
+                  onChange={(v) => setReporterId(v)}
+                />
+              ) : (
+                <div className="form-group">
+                  <label>Reporter</label>
+                  <div className="sidebar-readonly">
+                    {users.find((u) => String(u.id) === reporterId)?.name ?? '—'}
+                  </div>
+                </div>
+              )}
               <SidebarDropdown
                 label="Assignee"
                 value={assigneeId}

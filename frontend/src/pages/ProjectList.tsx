@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { getProjects, createProject, updateProject, deleteProject } from '../api';
 import type { Project } from '../types';
 import { useAuth } from '../context/AuthContext';
+import { useProject } from '../context/ProjectContext';
 
 type ModalMode = 'create' | 'edit';
 
@@ -19,6 +20,8 @@ export default function ProjectList() {
   const [error, setError] = useState('');
   const { user: authUser } = useAuth();
   const isAdmin = authUser?.role === 'admin';
+  const { setSelectedProjectId } = useProject();
+  const navigate = useNavigate();
 
   const [modal, setModal] = useState<{ mode: ModalMode; project?: Project } | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
@@ -117,7 +120,7 @@ export default function ProjectList() {
                 <td><span className="project-pill"><span>{p.name}</span></span></td>
                 <td>{p.description || <em style={{ color: '#64748b' }}>—</em>}</td>
                 <td>{new Date(p.created_at).toLocaleDateString()}</td>
-                <td><Link to={`/?project_id=${p.id}`}>View items</Link></td>
+                <td><button className="btn-link" onClick={() => { setSelectedProjectId(String(p.id)); navigate('/'); }}>View items</button></td>
                 <td>
                   <div style={{ display: 'flex', gap: '0.4rem' }}>
                     <button className="btn btn-secondary" onClick={() => openEdit(p)}><span>Edit</span></button>

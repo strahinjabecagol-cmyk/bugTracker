@@ -396,6 +396,7 @@ h4 { margin: 0 0 0.5rem; font-size: 0.875rem; font-weight: 600; }
   text-transform: capitalize;
   letter-spacing: 0.01em;
   border: 1px solid transparent;
+  white-space: nowrap;
 }
 
 .badge-status-open        { background: #eff6ff; color: #2563eb; border-color: #bfdbfe; }
@@ -1226,6 +1227,14 @@ h4 { margin: 0 0 0.5rem; font-size: 0.875rem; font-weight: 600; }
   gap: 0.25rem;
   border-left: 1px solid #334155;
   padding-left: 1.5rem;
+}
+.btn-link { background: none; border: none; padding: 0; color: var(--primary); cursor: pointer; font-size: inherit; font-family: inherit; }
+.btn-link:hover { color: var(--primary-dark); }
+.sidebar-readonly {
+  color: #94a3b8;
+  font-size: 0.875rem;
+  padding: 0.4rem 0;
+  font-weight: 500;
 }
 .detail-card .priority-dropdown { width: 100%; }
 .detail-card .priority-dropdown-trigger {

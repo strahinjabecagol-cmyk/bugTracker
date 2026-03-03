@@ -71,7 +71,7 @@ export function deleteProject(id: number): Promise<void> {
 
 // Users
 export function getUsers(): Promise<User[]> {
-  return request<User[]>('/users');
+  return request<User[]>('/users').then((users) => users.filter((u) => u.email !== 'deleted@system'));
 }
 
 export function createUser(data: CreateUserData): Promise<User> {
