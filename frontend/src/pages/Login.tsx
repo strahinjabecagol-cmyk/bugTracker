@@ -27,16 +27,17 @@ export default function Login() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <h1 className="auth-title">Bug Tracker</h1>
+        <div className="auth-heading-wrap">
+          <h2 className="board-heading"><span>Bug Tracker</span></h2>
+        </div>
         <p className="auth-subtitle">Sign in to your account</p>
 
         <form onSubmit={handleSubmit} className="auth-form">
           {error && <p className="error">{error}</p>}
 
           <div className="form-group">
-            <label className="form-label">Email</label>
+            <label>Email</label>
             <input
-              className="form-input"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -47,9 +48,8 @@ export default function Login() {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Password</label>
+            <label>Password</label>
             <input
-              className="form-input"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -58,8 +58,8 @@ export default function Login() {
             />
           </div>
 
-          <button className="btn btn-primary btn-full" type="submit" disabled={loading}>
-            {loading ? 'Signing in…' : 'Sign in'}
+          <button className="btn btn-primary" type="submit" disabled={loading}>
+            <span>{loading ? 'Signing in…' : 'Sign in'}</span>
           </button>
         </form>
 

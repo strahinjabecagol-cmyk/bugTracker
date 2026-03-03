@@ -983,23 +983,55 @@ h4 { margin: 0 0 0.5rem; font-size: 0.875rem; font-weight: 600; }
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg);
+  background: #0f172a;
 }
 .auth-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 2.5rem 2rem;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 0;
+  padding: 2.5rem;
   width: 100%;
   max-width: 400px;
-  box-shadow: var(--shadow);
+  box-shadow: none;
 }
-.auth-title { font-size: 1.5rem; font-weight: 700; margin: 0 0 0.25rem; text-align: center; }
-.auth-subtitle { color: var(--text-subtle); font-size: 0.875rem; text-align: center; margin: 0 0 1.75rem; }
+.auth-heading-wrap { display: flex; justify-content: center; margin-bottom: 0.75rem; }
+.auth-heading-wrap .board-heading {
+  background: rgba(99,102,241,0.15);
+  border-left-color: rgba(99,102,241,0.6);
+  color: #c7d2fe;
+}
+.auth-title { font-size: 1.4rem; font-weight: 700; margin: 0; color: #f1f5f9; }
+.auth-subtitle { color: #64748b; font-size: 0.875rem; text-align: center; margin: 0 0 1.75rem; }
 .auth-form { display: flex; flex-direction: column; gap: 1rem; }
-.auth-footer { text-align: center; font-size: 0.875rem; color: var(--text-subtle); margin: 1.25rem 0 0; }
-.auth-footer a { color: var(--accent); text-decoration: none; font-weight: 500; }
-.auth-footer a:hover { text-decoration: underline; }
+.auth-footer { text-align: center; font-size: 0.875rem; color: #64748b; margin: 1.25rem 0 0; }
+.auth-footer a { color: #a5b4fc; text-decoration: none; font-weight: 500; }
+.auth-footer a:hover { color: #c7d2fe; }
+.auth-page label { color: #64748b; }
+.auth-page input {
+  background: #0f172a;
+  border-color: #334155;
+  color: #f1f5f9;
+  border-radius: 0;
+}
+.auth-page input:focus {
+  border-color: rgba(99,102,241,0.6);
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+  outline: none;
+}
+.auth-page input::placeholder { color: #475569; }
+.auth-page .error {
+  background: rgba(239,68,68,0.1);
+  border-color: rgba(239,68,68,0.3);
+  color: #f87171;
+  border-radius: 0;
+}
+.auth-page .btn-primary {
+  transform: skewX(-12deg);
+  border-radius: 0;
+  width: 100%;
+  justify-content: center;
+}
+.auth-page .btn-primary > span { display: inline-block; transform: skewX(12deg); }
 .btn-full { width: 100%; justify-content: center; }
 
 /* ─── Navbar user section ─────────────────────────── */

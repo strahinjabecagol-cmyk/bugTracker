@@ -174,7 +174,7 @@ export default function BoardView() {
                 </div>
                 <div className="board-cards">
                   {cards.length === 0 ? (
-                    <p className="board-empty">{isOver ? '↓ Drop here' : 'No bugs'}</p>
+                    <p className="board-empty">{isOver ? '↓ Drop here' : 'No items'}</p>
                   ) : (
                     cards.map((bug) => {
                       const isDragging = activeDragId === bug.id;
