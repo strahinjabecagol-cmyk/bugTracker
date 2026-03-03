@@ -24,6 +24,12 @@ export default function ProjectList() {
   const [form, setForm] = useState<FormState>(emptyForm);
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<Project | null>(null);
+
+  useEffect(() => {
+    document.body.style.background = '#0f172a';
+    return () => { document.body.style.background = ''; };
+  }, []);
 
   useEffect(() => {
     getProjects()
@@ -68,8 +74,10 @@ export default function ProjectList() {
     }
   }
 
-  async function handleDelete(project: Project) {
-    if (!window.confirm(`Delete project "${project.name}"? This will also delete all its bugs.`)) return;
+  async function handleDelete() {
+    if (!confirmDelete) return;
+    const project = confirmDelete;
+    setConfirmDelete(null);
     try {
       await deleteProject(project.id);
       setProjects((prev) => prev.filter((p) => p.id !== project.id));
@@ -79,10 +87,10 @@ export default function ProjectList() {
   }
 
   return (
-    <div className="page">
+    <div className="page projects-page">
       <div className="page-header">
-        <h1>Projects</h1>
-        <button className="btn btn-primary" onClick={openCreate}>+ New Project</button>
+        <h1 className="board-heading"><span>Projects</span></h1>
+        <button className="btn btn-primary board-btn" onClick={openCreate}><span style={{ display: 'inline-block', transform: 'skewX(12deg)' }}>+ New Project</span></button>
       </div>
 
       {error && <p className="error">{error}</p>}
@@ -106,20 +114,38 @@ export default function ProjectList() {
             ) : projects.map((p) => (
               <tr key={p.id}>
                 <td>#{p.id}</td>
-                <td><strong>{p.name}</strong></td>
-                <td>{p.description || <em style={{ color: '#888' }}>—</em>}</td>
+                <td><span className="project-pill"><span>{p.name}</span></span></td>
+                <td>{p.description || <em style={{ color: '#64748b' }}>—</em>}</td>
                 <td>{new Date(p.created_at).toLocaleDateString()}</td>
-                <td><Link to={`/?project_id=${p.id}`}>View bugs</Link></td>
+                <td><Link to={`/?project_id=${p.id}`}>View items</Link></td>
                 <td>
                   <div style={{ display: 'flex', gap: '0.4rem' }}>
-                    <button className="btn btn-secondary" onClick={() => openEdit(p)}>Edit</button>
-                    {isAdmin && <button className="btn btn-danger" onClick={() => handleDelete(p)}>Delete</button>}
+                    <button className="btn btn-secondary" onClick={() => openEdit(p)}><span>Edit</span></button>
+                    {isAdmin && <button className="btn btn-danger" onClick={() => setConfirmDelete(p)}><span>Delete</span></button>}
                   </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
+      )}
+
+      {confirmDelete && (
+        <div className="modal-overlay" onClick={() => setConfirmDelete(null)}>
+          <div className="modal confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="confirm-icon">⚠</div>
+            <h2>Delete Project</h2>
+            <p className="confirm-message">
+              Delete <span className="confirm-name">{confirmDelete.name}</span>?
+              <br />
+              <span className="confirm-sub">This will also delete all its bugs.</span>
+            </p>
+            <div className="form-actions">
+              <button className="btn btn-danger board-btn" onClick={handleDelete}><span>Delete</span></button>
+              <button className="btn btn-secondary board-btn" onClick={() => setConfirmDelete(null)}><span>Cancel</span></button>
+            </div>
+          </div>
+        </div>
       )}
 
       {modal && (
@@ -149,10 +175,10 @@ export default function ProjectList() {
               </div>
               {formError && <p className="error">{formError}</p>}
               <div className="form-actions">
-                <button type="submit" className="btn btn-primary" disabled={submitting}>
-                  {submitting ? 'Saving...' : modal.mode === 'create' ? 'Create' : 'Save'}
+                <button type="submit" className="btn btn-primary board-btn" disabled={submitting}>
+                  <span>{submitting ? 'Saving...' : modal.mode === 'create' ? 'Create' : 'Save'}</span>
                 </button>
-                <button type="button" className="btn btn-secondary" onClick={closeModal}>Cancel</button>
+                <button type="button" className="btn btn-secondary board-btn" onClick={closeModal}><span>Cancel</span></button>
               </div>
             </form>
           </div>
