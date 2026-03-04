@@ -51,7 +51,7 @@ export default function Navbar() {
         )}
       </div>
       <div className="navbar-links">
-        <NavLink to="/" end className={({ isActive }) => isActive ? 'active' : ''}><span>Bugs</span></NavLink>
+        <NavLink to="/" end className={({ isActive }) => isActive ? 'active' : ''}><span>Items</span></NavLink>
         <NavLink to="/board" className={({ isActive }) => isActive ? 'active' : ''}><span>Board</span></NavLink>
         <NavLink to="/bugs/new" className={({ isActive }) => isActive ? 'active' : ''}><span>New Item</span></NavLink>
         <NavLink to="/projects" className={({ isActive }) => isActive ? 'active' : ''}><span>Projects</span></NavLink>

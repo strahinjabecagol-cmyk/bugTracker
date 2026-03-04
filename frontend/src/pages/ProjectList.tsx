@@ -107,7 +107,7 @@ export default function ProjectList() {
               <th>Name</th>
               <th>Description</th>
               <th>Created</th>
-              <th>Bugs</th>
+              <th>Items</th>
               <th>Actions</th>
             </tr>
           </thead>
