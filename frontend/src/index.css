@@ -647,6 +647,15 @@ h4 { margin: 0 0 0.5rem; font-size: 0.875rem; font-weight: 600; }
 .users-page .table a:hover { color: #a5b4fc; }
 .items-page .th-sortable:hover { color: #94a3b8; }
 .items-page .th-sorted { color: #818cf8; }
+.items-page .table { table-layout: fixed; }
+.items-page .table th:nth-child(1) { width: 64px; }
+.items-page .table th:nth-child(2) { width: auto; }
+.items-page .table th:nth-child(3) { width: 130px; }
+.items-page .table th:nth-child(4) { width: 80px; }
+.items-page .table th:nth-child(5) { width: 116px; }
+.items-page .table th:nth-child(6) { width: 96px; }
+.items-page .table th:nth-child(7) { width: 96px; }
+.items-page .table td:nth-child(2) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .items-page .priority-dropdown-trigger {
   transform: skewX(-12deg);

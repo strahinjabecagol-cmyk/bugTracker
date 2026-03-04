@@ -27,6 +27,10 @@ export default function BoardView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // Keep a ref to selectedProjectId so the WS handler sees the latest value without reconnecting
+  const selectedProjectIdRef = useRef(selectedProjectId);
+  useEffect(() => { selectedProjectIdRef.current = selectedProjectId; }, [selectedProjectId]);
+
   // Refs for use inside event handlers (always current, no stale closures)
   const dragRef = useRef<DragState | null>(null);
   const overColumnRef = useRef<Bug['status'] | null>(null);
@@ -136,6 +140,44 @@ export default function BoardView() {
       window.removeEventListener('mouseup', onMouseUp);
     };
   }, [navigate]);
+
+  // WebSocket — real-time board updates
+  useEffect(() => {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
+
+    ws.onmessage = (e) => {
+      const msg = JSON.parse(e.data as string) as
+        | { type: 'bug_created'; bug: Bug }
+        | { type: 'bug_updated'; bug: Bug }
+        | { type: 'bug_deleted'; id: number };
+
+      const projId = selectedProjectIdRef.current;
+
+      if (msg.type === 'bug_created') {
+        const { bug } = msg;
+        if (bug.status === 'closed') return;
+        if (projId && bug.project_id !== Number(projId)) return;
+        setBugs((prev) => prev.find((b) => b.id === bug.id) ? prev : [...prev, bug]);
+
+      } else if (msg.type === 'bug_updated') {
+        const { bug } = msg;
+        setBugs((prev) => {
+          if (bug.status === 'closed') return prev.filter((b) => b.id !== bug.id);
+          if (projId && bug.project_id !== Number(projId)) return prev.filter((b) => b.id !== bug.id);
+          const exists = prev.find((b) => b.id === bug.id);
+          return exists ? prev.map((b) => b.id === bug.id ? bug : b) : [...prev, bug];
+        });
+
+      } else if (msg.type === 'bug_deleted') {
+        setBugs((prev) => prev.filter((b) => b.id !== msg.id));
+      }
+    };
+
+    ws.onerror = (err) => console.error('WS error:', err);
+
+    return () => ws.close();
+  }, []);
 
   function handleMouseDown(e: React.MouseEvent<HTMLDivElement>, bug: Bug) {
     if (e.button !== 0) return;

@@ -1,5 +1,7 @@
+import http from 'http';
 import express, { Request, Response, NextFunction } from 'express';
 import cookieParser from 'cookie-parser';
+import { initWss } from './ws';
 import usersRouter    from './routes/users';
 import projectsRouter from './routes/projects';
 import bugsRouter     from './routes/bugs';
@@ -41,7 +43,9 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
 });
 
 const PORT = process.env.PORT ?? 3000;
-app.listen(PORT, () => {
+const server = http.createServer(app);
+initWss(server);
+server.listen(PORT, () => {
   console.log(`Bug Tracker API running on http://localhost:${PORT}`);
 });
 

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import db from '../db/database';
 import { validate } from '../middleware/validate';
 import { requireAdmin } from '../middleware/auth';
+import { broadcast } from '../ws';
 
 const router = Router({ mergeParams: true });
 
@@ -71,6 +72,7 @@ router.post('/', validate(BugCreateSchema), (req, res) => {
   `).run(project_id, title, description, type, priority, severity, reporter_id, assignee_id ?? null);
 
   const bug = db.prepare('SELECT * FROM bugs WHERE id = ?').get(info.lastInsertRowid);
+  broadcast({ type: 'bug_created', bug: bug as Record<string, unknown> });
   res.status(201).json(bug);
 });
 
@@ -94,12 +96,14 @@ router.put('/:id', validate(BugUpdateSchema), (req, res) => {
     req.params.id,
   );
   const bug = db.prepare('SELECT * FROM bugs WHERE id = ?').get(req.params.id);
+  broadcast({ type: 'bug_updated', bug: bug as Record<string, unknown> });
   res.json(bug);
 });
 
 // DELETE /bugs/:id
 router.delete('/:id', requireAdmin, (req, res) => {
   db.prepare('DELETE FROM bugs WHERE id = ?').run(req.params.id);
+  broadcast({ type: 'bug_deleted', id: Number(req.params.id) });
   res.status(204).send();
 });
 

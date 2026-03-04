@@ -99,6 +99,41 @@ export default function BugList() {
   const [sortCol, setSortCol] = useState<SortCol>('id');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
 
+  const selectedProjectIdRef = useRef(selectedProjectId);
+  useEffect(() => { selectedProjectIdRef.current = selectedProjectId; }, [selectedProjectId]);
+
+  useEffect(() => {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
+
+    ws.onmessage = (e) => {
+      const msg = JSON.parse(e.data as string) as
+        | { type: 'bug_created'; bug: Bug }
+        | { type: 'bug_updated'; bug: Bug }
+        | { type: 'bug_deleted'; id: number };
+
+      const projId = selectedProjectIdRef.current;
+
+      if (msg.type === 'bug_created') {
+        const { bug } = msg;
+        if (projId && bug.project_id !== Number(projId)) return;
+        setBugs((prev) => prev.find((b) => b.id === bug.id) ? prev : [...prev, bug]);
+      } else if (msg.type === 'bug_updated') {
+        const { bug } = msg;
+        setBugs((prev) => {
+          if (projId && bug.project_id !== Number(projId)) return prev.filter((b) => b.id !== bug.id);
+          const exists = prev.find((b) => b.id === bug.id);
+          return exists ? prev.map((b) => b.id === bug.id ? bug : b) : [...prev, bug];
+        });
+      } else if (msg.type === 'bug_deleted') {
+        setBugs((prev) => prev.filter((b) => b.id !== msg.id));
+      }
+    };
+
+    ws.onerror = (err) => console.error('WS error:', err);
+    return () => ws.close();
+  }, []);
+
   const priority = useMultiFilter<Priority>();
   const severity = useMultiFilter<Severity>();
   const status   = useMultiFilter<Status>();
