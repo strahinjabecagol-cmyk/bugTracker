@@ -13,6 +13,13 @@ export interface Project {
   created_at: string;
 }
 
+export interface BugImage {
+  id: number;
+  bug_id: number;
+  data_url: string;
+  created_at: string;
+}
+
 export interface Bug {
   id: number;
   project_id: number;
@@ -26,6 +33,7 @@ export interface Bug {
   assignee_id: number | null;
   created_at: string;
   updated_at: string;
+  images?: BugImage[];
 }
 
 export interface Comment {
@@ -55,6 +63,7 @@ export interface CreateBugData {
   severity?: Bug['severity'];
   reporter_id: number;
   assignee_id?: number | null;
+  images?: string[];
 }
 
 export interface UpdateBugData {
@@ -65,6 +74,7 @@ export interface UpdateBugData {
   priority?: Bug['priority'];
   severity?: Bug['severity'];
   assignee_id?: number | null;
+  images?: string[];
 }
 
 export interface AddCommentData {

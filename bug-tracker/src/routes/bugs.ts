@@ -16,6 +16,7 @@ const BugCreateSchema = z.object({
   severity:    z.enum(['minor', 'major', 'critical', 'blocker']).optional().default('major'),
   reporter_id: z.number().int().positive(),
   assignee_id: z.number().int().positive().nullable().optional(),
+  images:      z.array(z.string()).optional(),
 });
 
 const BugUpdateSchema = z.object({
@@ -26,7 +27,12 @@ const BugUpdateSchema = z.object({
   priority:    z.enum(['low', 'medium', 'high', 'critical']).optional(),
   severity:    z.enum(['minor', 'major', 'critical', 'blocker']).optional(),
   assignee_id: z.number().int().positive().nullable().optional(),
+  images:      z.array(z.string()).optional(),
 });
+
+function getImages(bugId: number) {
+  return db.prepare('SELECT * FROM bug_images WHERE bug_id = ? ORDER BY id').all(bugId);
+}
 
 // GET /bugs  or  GET /projects/:id/bugs
 router.get('/', (req: Request, res) => {
@@ -48,22 +54,26 @@ router.get('/', (req: Request, res) => {
 
   const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
   const bugs = db.prepare(`SELECT * FROM bugs ${where} ORDER BY id`).all(...values);
-  res.json(bugs);
+  const result = (bugs as Record<string, unknown>[]).map((b) => ({
+    ...b,
+    images: getImages(b.id as number),
+  }));
+  res.json(result);
 });
 
 // GET /bugs/:id
 router.get('/:id', (req, res) => {
-  const bug = db.prepare('SELECT * FROM bugs WHERE id = ?').get(req.params.id);
+  const bug = db.prepare('SELECT * FROM bugs WHERE id = ?').get(req.params.id) as Record<string, unknown> | undefined;
   if (!bug) {
     res.status(404).json({ error: 'Bug not found' });
     return;
   }
-  res.json(bug);
+  res.json({ ...bug, images: getImages(bug.id as number) });
 });
 
 // POST /bugs
 router.post('/', validate(BugCreateSchema), (req, res) => {
-  const { project_id, title, description, type, priority, severity, reporter_id, assignee_id } =
+  const { project_id, title, description, type, priority, severity, reporter_id, assignee_id, images } =
     req.body as z.infer<typeof BugCreateSchema>;
 
   const info = db.prepare(`
@@ -71,9 +81,15 @@ router.post('/', validate(BugCreateSchema), (req, res) => {
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `).run(project_id, title, description, type, priority, severity, reporter_id, assignee_id ?? null);
 
-  const bug = db.prepare('SELECT * FROM bugs WHERE id = ?').get(info.lastInsertRowid);
-  broadcast({ type: 'bug_created', bug: bug as Record<string, unknown> });
-  res.status(201).json(bug);
+  const newId = info.lastInsertRowid as number;
+  if (images?.length) {
+    const insertImg = db.prepare('INSERT INTO bug_images (bug_id, data_url) VALUES (?, ?)');
+    for (const url of images) insertImg.run(newId, url);
+  }
+
+  const bug = db.prepare('SELECT * FROM bugs WHERE id = ?').get(newId) as Record<string, unknown>;
+  broadcast({ type: 'bug_created', bug });
+  res.status(201).json({ ...bug, images: getImages(newId) });
 });
 
 // PUT /bugs/:id
@@ -95,9 +111,20 @@ router.put('/:id', validate(BugUpdateSchema), (req, res) => {
     merged.priority, merged.severity, merged.assignee_id,
     req.params.id,
   );
-  const bug = db.prepare('SELECT * FROM bugs WHERE id = ?').get(req.params.id);
-  broadcast({ type: 'bug_updated', bug: bug as Record<string, unknown> });
-  res.json(bug);
+
+  if (updates.images !== undefined) {
+    const bugId = Number(req.params.id);
+    db.prepare('DELETE FROM bug_images WHERE bug_id = ?').run(bugId);
+    if (updates.images.length) {
+      const insertImg = db.prepare('INSERT INTO bug_images (bug_id, data_url) VALUES (?, ?)');
+      for (const url of updates.images) insertImg.run(bugId, url);
+    }
+  }
+
+  const bugId = Number(req.params.id);
+  const bug = db.prepare('SELECT * FROM bugs WHERE id = ?').get(bugId) as Record<string, unknown>;
+  broadcast({ type: 'bug_updated', bug });
+  res.json({ ...bug, images: getImages(bugId) });
 });
 
 // DELETE /bugs/:id

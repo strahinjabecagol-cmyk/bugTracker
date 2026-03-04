@@ -11,7 +11,7 @@ import { requireAuth } from './middleware/auth';
 import { broadcast } from './ws';
 
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: '100mb' }));
 app.use(cookieParser());
 
 // Auth routes — public (no token required)

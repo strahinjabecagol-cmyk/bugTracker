@@ -20,6 +20,8 @@ export default function BugDetail() {
   const [error, setError] = useState('');
 
   const [editData, setEditData] = useState<Partial<Bug>>({});
+  const [editImages, setEditImages] = useState<string[]>([]);
+  const [confirmRemoveImage, setConfirmRemoveImage] = useState<number | null>(null);
   const [saveError, setSaveError] = useState('');
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -39,6 +41,7 @@ export default function BugDetail() {
       .then(([b, c, u, p]) => {
         setBug(b);
         setEditData(b);
+        setEditImages((b.images ?? []).map((img) => img.data_url));
         setComments(c);
         setUsers(u);
         setProjects(p);
@@ -66,9 +69,11 @@ export default function BugDetail() {
         priority: editData.priority,
         severity: editData.severity,
         assignee_id: editData.assignee_id,
+        images: editImages,
       });
       setBug(updated);
       setEditData(updated);
+      setEditImages((updated.images ?? []).map((img) => img.data_url));
     } catch (e) {
       setSaveError(e instanceof Error ? e.message : 'Failed to save');
     } finally {
@@ -156,6 +161,42 @@ export default function BugDetail() {
                 onChange={(e) => setEditData((d) => ({ ...d, description: e.target.value }))}
                 placeholder="Describe the issue or task..."
               />
+            </div>
+            <div className="form-group">
+              <label>Images</label>
+              {editImages.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                  {editImages.map((src, i) => (
+                    <div key={i} style={{ position: 'relative', width: 120, height: 75, flexShrink: 0 }}>
+                      <img src={src} alt="" style={{ width: 120, height: 75, objectFit: 'cover', borderRadius: 4, border: '1px solid #334155', display: 'block' }} />
+                      <button
+                        type="button"
+                        onClick={() => setConfirmRemoveImage(i)}
+                        style={{ position: 'absolute', top: 4, right: 4, background: '#ef4444', color: '#fff', border: 'none', borderRadius: '50%', width: 22, height: 22, cursor: 'pointer', lineHeight: 1, padding: 0, fontSize: '1rem' }}
+                      >×</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <input
+                id="detail-img-input"
+                type="file"
+                multiple
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={(e) => {
+                  const files = Array.from(e.target.files ?? []);
+                  files.forEach((file) => {
+                    const reader = new FileReader();
+                    reader.onload = () => setEditImages((prev) => [...prev, reader.result as string]);
+                    reader.readAsDataURL(file);
+                  });
+                  e.target.value = '';
+                }}
+              />
+              <button type="button" className="btn-logout" style={{ width: 'fit-content' }} onClick={() => document.getElementById('detail-img-input')?.click()}>
+                <span>Attach Images</span>
+              </button>
             </div>
           </div>
 
@@ -249,6 +290,24 @@ export default function BugDetail() {
           </form>
         </div>
       </div>
+
+      {confirmRemoveImage !== null && (
+        <div className="modal-overlay" onClick={() => setConfirmRemoveImage(null)}>
+          <div className="modal confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="confirm-icon">⚠</div>
+            <h2>Remove Image</h2>
+            <p className="confirm-message">
+              Remove this image?
+              <br />
+              <span className="confirm-sub">This action cannot be undone.</span>
+            </p>
+            <div className="form-actions">
+              <button className="btn btn-danger board-btn" onClick={() => { setEditImages((prev) => prev.filter((_, j) => j !== confirmRemoveImage)); setConfirmRemoveImage(null); }}><span>Remove</span></button>
+              <button className="btn btn-secondary board-btn" onClick={() => setConfirmRemoveImage(null)}><span>Cancel</span></button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {confirmDelete && (
         <div className="modal-overlay" onClick={() => setConfirmDelete(false)}>

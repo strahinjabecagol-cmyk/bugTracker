@@ -23,6 +23,8 @@ export default function BugForm() {
   const [severity, setSeverity] = useState<'minor' | 'major' | 'critical' | 'blocker'>('major');
   const [assigneeId, setAssigneeId] = useState('');
 
+  const [images, setImages] = useState<string[]>([]);
+  const [confirmRemoveImage, setConfirmRemoveImage] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -57,6 +59,7 @@ export default function BugForm() {
         severity,
         reporter_id: Number(reporterId),
         assignee_id: assigneeId ? Number(assigneeId) : null,
+        images,
       });
       navigate(`/bugs/${bug.id}`);
     } catch (e) {
@@ -125,6 +128,42 @@ export default function BugForm() {
                   placeholder="Steps to reproduce, expected vs actual behavior..."
                 />
               </div>
+              <div className="form-group">
+                <label>Images</label>
+                {images.length > 0 && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                    {images.map((src, i) => (
+                      <div key={i} style={{ position: 'relative', width: 120, height: 75, flexShrink: 0 }}>
+                        <img src={src} alt="" style={{ width: 120, height: 75, objectFit: 'cover', borderRadius: 4, border: '1px solid #334155', display: 'block' }} />
+                        <button
+                          type="button"
+                          onClick={() => setConfirmRemoveImage(i)}
+                          style={{ position: 'absolute', top: 4, right: 4, background: '#ef4444', color: '#fff', border: 'none', borderRadius: '50%', width: 22, height: 22, cursor: 'pointer', lineHeight: 1, padding: 0, fontSize: '1rem' }}
+                        >×</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <input
+                  id="form-img-input"
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    const files = Array.from(e.target.files ?? []);
+                    files.forEach((file) => {
+                      const reader = new FileReader();
+                      reader.onload = () => setImages((prev) => [...prev, reader.result as string]);
+                      reader.readAsDataURL(file);
+                    });
+                    e.target.value = '';
+                  }}
+                />
+                <button type="button" className="btn-logout" style={{ width: 'fit-content' }} onClick={() => document.getElementById('form-img-input')?.click()}>
+                  <span>Attach Images</span>
+                </button>
+              </div>
             </div>
 
             <div className="detail-card-sidebar">
@@ -175,6 +214,24 @@ export default function BugForm() {
           </div>
         </div>
       </form>
+
+      {confirmRemoveImage !== null && (
+        <div className="modal-overlay" onClick={() => setConfirmRemoveImage(null)}>
+          <div className="modal confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="confirm-icon">⚠</div>
+            <h2>Remove Image</h2>
+            <p className="confirm-message">
+              Remove this image?
+              <br />
+              <span className="confirm-sub">This action cannot be undone.</span>
+            </p>
+            <div className="form-actions">
+              <button className="btn btn-danger board-btn" onClick={() => { setImages((prev) => prev.filter((_, j) => j !== confirmRemoveImage)); setConfirmRemoveImage(null); }}><span>Remove</span></button>
+              <button className="btn btn-secondary board-btn" onClick={() => setConfirmRemoveImage(null)}><span>Cancel</span></button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

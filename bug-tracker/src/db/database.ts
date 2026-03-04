@@ -51,6 +51,16 @@ db.exec(`
   );
 `);
 
+// Add bug_images table if it doesn't exist yet
+db.exec(`
+  CREATE TABLE IF NOT EXISTS bug_images (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    bug_id     INTEGER NOT NULL REFERENCES bugs(id) ON DELETE CASCADE,
+    data_url   TEXT    NOT NULL,
+    created_at TEXT    NOT NULL DEFAULT (datetime('now'))
+  );
+`);
+
 // Add password_hash column if it doesn't exist yet (safe migration)
 try {
   db.exec(`ALTER TABLE users ADD COLUMN password_hash TEXT`);
