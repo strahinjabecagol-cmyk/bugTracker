@@ -7,6 +7,20 @@ import {
 import { z } from 'zod';
 import db from '../db/database';
 
+const API = 'http://localhost:3000';
+async function wsBroadcast(msg: unknown) {
+  try {
+    const res = await fetch(`${API}/internal/broadcast`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(msg),
+    });
+    console.error('[wsBroadcast] status:', res.status);
+  } catch (e) {
+    console.error('[wsBroadcast] fetch error:', e);
+  }
+}
+
 const server = new Server(
   { name: 'bug-tracker', version: '1.0.0' },
   { capabilities: { tools: {} } },
@@ -247,6 +261,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         input.assignee_id ?? null,
       );
       const bug = db.prepare('SELECT * FROM bugs WHERE id = ?').get(info.lastInsertRowid);
+      await wsBroadcast({ type: 'bug_created', bug });
       return text(bug);
     }
 
@@ -274,12 +289,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         input.id,
       );
       const bug = db.prepare('SELECT * FROM bugs WHERE id = ?').get(input.id);
+      await wsBroadcast({ type: 'bug_updated', bug });
       return text(bug);
     }
 
     case 'delete_bug': {
       const { id } = z.object({ id: z.number() }).parse(args);
       db.prepare('DELETE FROM bugs WHERE id = ?').run(id);
+      await wsBroadcast({ type: 'bug_deleted', id });
       return text({ success: true, id });
     }
 

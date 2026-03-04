@@ -16,3 +16,5 @@ yarn-debug.log*
 *.db-shm
 *.db-wal
 SESSION.md
+SESSION-2.md
+SESSION-1.md

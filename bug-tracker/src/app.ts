@@ -8,6 +8,7 @@ import bugsRouter     from './routes/bugs';
 import commentsRouter, { deleteComment } from './routes/comments';
 import authRouter from './routes/auth';
 import { requireAuth } from './middleware/auth';
+import { broadcast } from './ws';
 
 const app = express();
 app.use(express.json());
@@ -15,6 +16,13 @@ app.use(cookieParser());
 
 // Auth routes — public (no token required)
 app.use('/auth', authRouter);
+
+// Internal broadcast endpoint — called by the MCP server to push WS events
+app.post('/internal/broadcast', (req, res) => {
+  console.log('[broadcast] received:', req.body);
+  broadcast(req.body);
+  res.status(204).send();
+});
 
 // All routes below this line require a valid JWT
 app.use(requireAuth);
