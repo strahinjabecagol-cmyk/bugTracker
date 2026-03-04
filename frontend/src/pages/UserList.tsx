@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { getUsers, createUser, updateUser, deleteUser } from '../api';
 import type { User } from '../types';
 import { useAuth } from '../context/AuthContext';
+import Button from '../components/Button';
+import ConfirmModal from '../components/ConfirmModal';
 
 type ModalMode = 'create' | 'edit';
 
@@ -90,7 +92,7 @@ export default function UserList() {
     <div className="page users-page">
       <div className="page-header">
         <h1 className="board-heading"><span>Users</span></h1>
-        {isAdmin && <button className="btn btn-primary board-btn" onClick={openCreate}><span>+ New User</span></button>}
+        {isAdmin && <Button variant="primary" onClick={openCreate}>+ New User</Button>}
       </div>
 
       {error && <p className="error">{error}</p>}
@@ -121,8 +123,8 @@ export default function UserList() {
                 {isAdmin && (
                   <td>
                     <div style={{ display: 'flex', gap: '0.4rem' }}>
-                      <button className="btn btn-secondary" onClick={() => openEdit(u)}><span>Edit</span></button>
-                      <button className="btn btn-danger" onClick={() => setConfirmDelete(u)}><span>Delete</span></button>
+                      <Button variant="secondary" onClick={() => openEdit(u)}>Edit</Button>
+                      <Button variant="danger" onClick={() => setConfirmDelete(u)}>Delete</Button>
                     </div>
                   </td>
                 )}
@@ -133,21 +135,13 @@ export default function UserList() {
       )}
 
       {confirmDelete && (
-        <div className="modal-overlay" onClick={() => setConfirmDelete(null)}>
-          <div className="modal confirm-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="confirm-icon">⚠</div>
-            <h2>Delete User</h2>
-            <p className="confirm-message">
-              Delete <span className="confirm-name">{confirmDelete.name}</span>?
-              <br />
-              <span className="confirm-sub">This action cannot be undone.</span>
-            </p>
-            <div className="form-actions">
-              <button className="btn btn-danger board-btn" onClick={handleDelete}><span>Delete</span></button>
-              <button className="btn btn-secondary board-btn" onClick={() => setConfirmDelete(null)}><span>Cancel</span></button>
-            </div>
-          </div>
-        </div>
+        <ConfirmModal
+          title="Delete User"
+          message={<>Delete <span className="confirm-name">{confirmDelete.name}</span>?<br /><span className="confirm-sub">This action cannot be undone.</span></>}
+          confirmLabel="Delete"
+          onConfirm={handleDelete}
+          onCancel={() => setConfirmDelete(null)}
+        />
       )}
 
       {modal && (
@@ -189,10 +183,8 @@ export default function UserList() {
               </div>
               {formError && <p className="error">{formError}</p>}
               <div className="form-actions">
-                <button type="submit" className="btn btn-primary board-btn" disabled={submitting}>
-                  <span>{submitting ? 'Saving...' : modal.mode === 'create' ? 'Create' : 'Save'}</span>
-                </button>
-                <button type="button" className="btn btn-secondary board-btn" onClick={closeModal}><span>Cancel</span></button>
+                <Button type="submit" variant="primary" disabled={submitting}>{submitting ? 'Saving...' : modal.mode === 'create' ? 'Create' : 'Save'}</Button>
+                <Button type="button" variant="secondary" onClick={closeModal}>Cancel</Button>
               </div>
             </form>
           </div>

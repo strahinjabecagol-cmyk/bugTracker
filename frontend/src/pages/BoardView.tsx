@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { getBugs, updateBug } from '../api';
 import type { Bug } from '../types';
 import Badge from '../components/Badge';
+import Button from '../components/Button';
 import { useProject } from '../context/ProjectContext';
 
 const COLUMNS: { status: Bug['status']; label: string }[] = [
@@ -193,7 +194,7 @@ export default function BoardView() {
     <div className="page board-page" style={{ userSelect: activeDragId !== null ? 'none' : undefined }}>
       <div className="page-header">
         <h1 className="board-heading"><span>Board</span></h1>
-        <Link to="/bugs/new" className="btn btn-primary board-btn"><span style={{ display: 'inline-block', transform: 'skewX(12deg)' }}>+ New Item</span></Link>
+        <Link to="/bugs/new"><Button variant="primary">+ New Item</Button></Link>
       </div>
 
       {error && <p className="error">{error}</p>}

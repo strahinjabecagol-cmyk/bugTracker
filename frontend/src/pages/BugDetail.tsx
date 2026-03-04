@@ -4,6 +4,8 @@ import { getBug, updateBug, deleteBug, getComments, addComment, getUsers, getPro
 import type { Bug, Comment, User, Project, BugCommit } from '../types';
 import { useAuth } from '../context/AuthContext';
 import SidebarDropdown from '../components/SidebarDropdown';
+import Button from '../components/Button';
+import ConfirmModal from '../components/ConfirmModal';
 
 export default function BugDetail() {
   const { id } = useParams<{ id: string }>();
@@ -135,13 +137,9 @@ export default function BugDetail() {
           </span>
         </h1>
         <div className="header-actions">
-          <button className="btn btn-primary board-btn" onClick={handleSave} disabled={saving}>
-            <span>{saving ? 'Saving...' : 'Save'}</span>
-          </button>
+          <Button variant="primary" onClick={handleSave} disabled={saving}>{saving ? 'Saving...' : 'Save'}</Button>
           {isAdmin && (
-            <button className="btn btn-danger board-btn" onClick={() => setConfirmDelete(true)}>
-              <span>Delete</span>
-            </button>
+            <Button variant="danger" onClick={() => setConfirmDelete(true)}>Delete</Button>
           )}
         </div>
       </div>
@@ -166,7 +164,7 @@ export default function BugDetail() {
                 placeholder="Describe the issue or task..."
               />
             </div>
-            <div className="form-group">
+            <div className="form-group" style={{ paddingLeft: '5px' }}>
               <label>Images</label>
               {editImages.length > 0 && (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
@@ -198,9 +196,7 @@ export default function BugDetail() {
                   e.target.value = '';
                 }}
               />
-              <button type="button" className="btn-logout" style={{ width: 'fit-content' }} onClick={() => document.getElementById('detail-img-input')?.click()}>
-                <span>Attach Images</span>
-              </button>
+              <Button type="button" variant="ghost" style={{ width: 'fit-content' }} onClick={() => document.getElementById('detail-img-input')?.click()}>Attach Images</Button>
             </div>
           </div>
 
@@ -257,8 +253,8 @@ export default function BugDetail() {
       <div className="comments-section-dark">
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
           <h3 style={{ margin: 0 }}>Commits ({commits.length})</h3>
-          <button
-            className="btn-logout"
+          <Button
+            variant="ghost"
             style={{ width: 'fit-content' }}
             disabled={syncing}
             onClick={async () => {
@@ -268,9 +264,7 @@ export default function BugDetail() {
               setCommits(updated);
               setSyncing(false);
             }}
-          >
-            <span>{syncing ? 'Syncing...' : 'Sync'}</span>
-          </button>
+          >{syncing ? 'Syncing...' : 'Sync'}</Button>
         </div>
         {commits.length === 0 && <p className="no-comments">No linked commits yet. Mention <strong>#{bug.id}</strong> in a commit message.</p>}
         {commits.map((c) => (
@@ -319,47 +313,29 @@ export default function BugDetail() {
               />
             </div>
             {commentError && <p className="error">{commentError}</p>}
-            <button type="submit" className="btn btn-primary board-btn" disabled={submittingComment}>
-              <span>{submittingComment ? 'Posting...' : 'Post Comment'}</span>
-            </button>
+            <Button type="submit" variant="primary" disabled={submittingComment}>{submittingComment ? 'Posting...' : 'Post Comment'}</Button>
           </form>
         </div>
       </div>
 
       {confirmRemoveImage !== null && (
-        <div className="modal-overlay" onClick={() => setConfirmRemoveImage(null)}>
-          <div className="modal confirm-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="confirm-icon">⚠</div>
-            <h2>Remove Image</h2>
-            <p className="confirm-message">
-              Remove this image?
-              <br />
-              <span className="confirm-sub">This action cannot be undone.</span>
-            </p>
-            <div className="form-actions">
-              <button className="btn btn-danger board-btn" onClick={() => { setEditImages((prev) => prev.filter((_, j) => j !== confirmRemoveImage)); setConfirmRemoveImage(null); }}><span>Remove</span></button>
-              <button className="btn btn-secondary board-btn" onClick={() => setConfirmRemoveImage(null)}><span>Cancel</span></button>
-            </div>
-          </div>
-        </div>
+        <ConfirmModal
+          title="Remove Image"
+          message={<>Remove this image?<br /><span className="confirm-sub">This action cannot be undone.</span></>}
+          confirmLabel="Remove"
+          onConfirm={() => { setEditImages((prev) => prev.filter((_, j) => j !== confirmRemoveImage)); setConfirmRemoveImage(null); }}
+          onCancel={() => setConfirmRemoveImage(null)}
+        />
       )}
 
       {confirmDelete && (
-        <div className="modal-overlay" onClick={() => setConfirmDelete(false)}>
-          <div className="modal confirm-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="confirm-icon">⚠</div>
-            <h2>Delete Item</h2>
-            <p className="confirm-message">
-              Delete <span className="confirm-name">#{bug.id}</span>?
-              <br />
-              <span className="confirm-sub">This action cannot be undone.</span>
-            </p>
-            <div className="form-actions">
-              <button className="btn btn-danger board-btn" onClick={handleDelete}><span>Delete</span></button>
-              <button className="btn btn-secondary board-btn" onClick={() => setConfirmDelete(false)}><span>Cancel</span></button>
-            </div>
-          </div>
-        </div>
+        <ConfirmModal
+          title="Delete Item"
+          message={<>Delete <span className="confirm-name">#{bug.id}</span>?<br /><span className="confirm-sub">This action cannot be undone.</span></>}
+          confirmLabel="Delete"
+          onConfirm={handleDelete}
+          onCancel={() => setConfirmDelete(false)}
+        />
       )}
     </div>
   );

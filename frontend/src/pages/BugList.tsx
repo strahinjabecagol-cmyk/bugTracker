@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import Button from '../components/Button';
 import { getBugs } from '../api';
 import type { Bug } from '../types';
 import Badge from '../components/Badge';
@@ -206,7 +207,7 @@ export default function BugList() {
               : 'Items'}
           </span>
         </h1>
-        <Link to="/bugs/new" className="btn btn-primary board-btn"><span style={{ display: 'inline-block', transform: 'skewX(12deg)' }}>+ New Item</span></Link>
+        <Link to="/bugs/new"><Button variant="primary">+ New Item</Button></Link>
       </div>
 
       <div className="filters">

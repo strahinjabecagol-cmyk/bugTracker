@@ -4,6 +4,8 @@ import { getProjects, createProject, updateProject, deleteProject } from '../api
 import type { Project } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { useProject } from '../context/ProjectContext';
+import Button from '../components/Button';
+import ConfirmModal from '../components/ConfirmModal';
 
 type ModalMode = 'create' | 'edit';
 
@@ -93,7 +95,7 @@ export default function ProjectList() {
     <div className="page projects-page">
       <div className="page-header">
         <h1 className="board-heading"><span>Projects</span></h1>
-        <button className="btn btn-primary board-btn" onClick={openCreate}><span style={{ display: 'inline-block', transform: 'skewX(12deg)' }}>+ New Project</span></button>
+        <Button variant="primary" onClick={openCreate}>+ New Project</Button>
       </div>
 
       {error && <p className="error">{error}</p>}
@@ -123,8 +125,8 @@ export default function ProjectList() {
                 <td><button className="btn-link" onClick={() => { setSelectedProjectId(String(p.id)); navigate('/'); }}>View items</button></td>
                 <td>
                   <div style={{ display: 'flex', gap: '0.4rem' }}>
-                    <button className="btn btn-secondary" onClick={() => openEdit(p)}><span>Edit</span></button>
-                    {isAdmin && <button className="btn btn-danger" onClick={() => setConfirmDelete(p)}><span>Delete</span></button>}
+                    <Button variant="secondary" onClick={() => openEdit(p)}>Edit</Button>
+                    {isAdmin && <Button variant="danger" onClick={() => setConfirmDelete(p)}>Delete</Button>}
                   </div>
                 </td>
               </tr>
@@ -134,21 +136,13 @@ export default function ProjectList() {
       )}
 
       {confirmDelete && (
-        <div className="modal-overlay" onClick={() => setConfirmDelete(null)}>
-          <div className="modal confirm-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="confirm-icon">⚠</div>
-            <h2>Delete Project</h2>
-            <p className="confirm-message">
-              Delete <span className="confirm-name">{confirmDelete.name}</span>?
-              <br />
-              <span className="confirm-sub">This will also delete all its bugs.</span>
-            </p>
-            <div className="form-actions">
-              <button className="btn btn-danger board-btn" onClick={handleDelete}><span>Delete</span></button>
-              <button className="btn btn-secondary board-btn" onClick={() => setConfirmDelete(null)}><span>Cancel</span></button>
-            </div>
-          </div>
-        </div>
+        <ConfirmModal
+          title="Delete Project"
+          message={<>Delete <span className="confirm-name">{confirmDelete.name}</span>?<br /><span className="confirm-sub">This will also delete all its bugs.</span></>}
+          confirmLabel="Delete"
+          onConfirm={handleDelete}
+          onCancel={() => setConfirmDelete(null)}
+        />
       )}
 
       {modal && (
@@ -178,10 +172,8 @@ export default function ProjectList() {
               </div>
               {formError && <p className="error">{formError}</p>}
               <div className="form-actions">
-                <button type="submit" className="btn btn-primary board-btn" disabled={submitting}>
-                  <span>{submitting ? 'Saving...' : modal.mode === 'create' ? 'Create' : 'Save'}</span>
-                </button>
-                <button type="button" className="btn btn-secondary board-btn" onClick={closeModal}><span>Cancel</span></button>
+                <Button type="submit" variant="primary" disabled={submitting}>{submitting ? 'Saving...' : modal.mode === 'create' ? 'Create' : 'Save'}</Button>
+                <Button type="button" variant="secondary" onClick={closeModal}>Cancel</Button>
               </div>
             </form>
           </div>

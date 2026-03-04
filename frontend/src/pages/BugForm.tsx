@@ -5,6 +5,8 @@ import type { Project, User } from '../types';
 import { useProject } from '../context/ProjectContext';
 import { useAuth } from '../context/AuthContext';
 import SidebarDropdown from '../components/SidebarDropdown';
+import Button from '../components/Button';
+import ConfirmModal from '../components/ConfirmModal';
 
 export default function BugForm() {
   const navigate = useNavigate();
@@ -87,12 +89,8 @@ export default function BugForm() {
             </span>
           </h1>
           <div className="header-actions">
-            <button type="submit" className="btn btn-primary board-btn" disabled={submitting}>
-              <span>{submitting ? 'Creating...' : 'Create Item'}</span>
-            </button>
-            <button type="button" className="btn btn-secondary board-btn" onClick={() => navigate(-1)}>
-              <span>Cancel</span>
-            </button>
+            <Button type="submit" variant="primary" disabled={submitting}>{submitting ? 'Creating...' : 'Create Item'}</Button>
+            <Button type="button" variant="secondary" onClick={() => navigate(-1)}>Cancel</Button>
           </div>
         </div>
 
@@ -128,7 +126,7 @@ export default function BugForm() {
                   placeholder="Steps to reproduce, expected vs actual behavior..."
                 />
               </div>
-              <div className="form-group">
+              <div className="form-group" style={{ paddingLeft: '5px' }}>
                 <label>Images</label>
                 {images.length > 0 && (
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
@@ -160,9 +158,7 @@ export default function BugForm() {
                     e.target.value = '';
                   }}
                 />
-                <button type="button" className="btn-logout" style={{ width: 'fit-content' }} onClick={() => document.getElementById('form-img-input')?.click()}>
-                  <span>Attach Images</span>
-                </button>
+                <Button type="button" variant="ghost" style={{ width: 'fit-content' }} onClick={() => document.getElementById('form-img-input')?.click()}>Attach Images</Button>
               </div>
             </div>
 
@@ -216,21 +212,13 @@ export default function BugForm() {
       </form>
 
       {confirmRemoveImage !== null && (
-        <div className="modal-overlay" onClick={() => setConfirmRemoveImage(null)}>
-          <div className="modal confirm-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="confirm-icon">⚠</div>
-            <h2>Remove Image</h2>
-            <p className="confirm-message">
-              Remove this image?
-              <br />
-              <span className="confirm-sub">This action cannot be undone.</span>
-            </p>
-            <div className="form-actions">
-              <button className="btn btn-danger board-btn" onClick={() => { setImages((prev) => prev.filter((_, j) => j !== confirmRemoveImage)); setConfirmRemoveImage(null); }}><span>Remove</span></button>
-              <button className="btn btn-secondary board-btn" onClick={() => setConfirmRemoveImage(null)}><span>Cancel</span></button>
-            </div>
-          </div>
-        </div>
+        <ConfirmModal
+          title="Remove Image"
+          message={<>Remove this image?<br /><span className="confirm-sub">This action cannot be undone.</span></>}
+          confirmLabel="Remove"
+          onConfirm={() => { setImages((prev) => prev.filter((_, j) => j !== confirmRemoveImage)); setConfirmRemoveImage(null); }}
+          onCancel={() => setConfirmRemoveImage(null)}
+        />
       )}
     </div>
   );
