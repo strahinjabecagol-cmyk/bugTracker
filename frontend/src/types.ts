@@ -13,6 +13,16 @@ export interface Project {
   created_at: string;
 }
 
+export interface BugCommit {
+  id: number;
+  bug_id: number;
+  commit_sha: string;
+  message: string;
+  author: string;
+  committed_at: string;
+  url: string;
+}
+
 export interface BugImage {
   id: number;
   bug_id: number;

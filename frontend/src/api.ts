@@ -1,5 +1,5 @@
 import type {
-  Bug, Project, User, Comment,
+  Bug, Project, User, Comment, BugCommit,
   BugFilters, CreateBugData, UpdateBugData, AddCommentData,
   CreateProjectData, UpdateProjectData,
   CreateUserData, UpdateUserData,
@@ -84,6 +84,15 @@ export function updateUser(id: number, data: UpdateUserData): Promise<User> {
 
 export function deleteUser(id: number): Promise<void> {
   return request<void>(`/users/${id}`, { method: 'DELETE' });
+}
+
+// Commits
+export function getCommits(bugId: number): Promise<BugCommit[]> {
+  return request<BugCommit[]>(`/bugs/${bugId}/commits`);
+}
+
+export function syncCommits(): Promise<void> {
+  return request<void>('/gitlab/sync', { method: 'POST' });
 }
 
 // Comments

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getBug, updateBug, deleteBug, getComments, addComment, getUsers, getProjects } from '../api';
-import type { Bug, Comment, User, Project } from '../types';
+import { getBug, updateBug, deleteBug, getComments, addComment, getUsers, getProjects, getCommits, syncCommits } from '../api';
+import type { Bug, Comment, User, Project, BugCommit } from '../types';
 import { useAuth } from '../context/AuthContext';
 import SidebarDropdown from '../components/SidebarDropdown';
 
@@ -26,6 +26,9 @@ export default function BugDetail() {
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
+  const [commits, setCommits] = useState<BugCommit[]>([]);
+  const [syncing, setSyncing] = useState(false);
+
   const [commentContent, setCommentContent] = useState('');
   const [commentUserId, setCommentUserId] = useState('');
   const [commentError, setCommentError] = useState('');
@@ -37,14 +40,15 @@ export default function BugDetail() {
   }, []);
 
   useEffect(() => {
-    Promise.all([getBug(bugId), getComments(bugId), getUsers(), getProjects()])
-      .then(([b, c, u, p]) => {
+    Promise.all([getBug(bugId), getComments(bugId), getUsers(), getProjects(), getCommits(bugId)])
+      .then(([b, c, u, p, commits]) => {
         setBug(b);
         setEditData(b);
         setEditImages((b.images ?? []).map((img) => img.data_url));
         setComments(c);
         setUsers(u);
         setProjects(p);
+        setCommits(commits);
         if (authUser?.id) setCommentUserId(String(authUser.id));
       })
       .catch((e: Error) => setError(e.message))
@@ -248,6 +252,37 @@ export default function BugDetail() {
             />
           </div>
         </div>
+      </div>
+
+      <div className="comments-section-dark">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+          <h3 style={{ margin: 0 }}>Commits ({commits.length})</h3>
+          <button
+            className="btn-logout"
+            style={{ width: 'fit-content' }}
+            disabled={syncing}
+            onClick={async () => {
+              setSyncing(true);
+              await syncCommits().catch(console.error);
+              const updated = await getCommits(bugId).catch(() => commits);
+              setCommits(updated);
+              setSyncing(false);
+            }}
+          >
+            <span>{syncing ? 'Syncing...' : 'Sync'}</span>
+          </button>
+        </div>
+        {commits.length === 0 && <p className="no-comments">No linked commits yet. Mention <strong>#{bug.id}</strong> in a commit message.</p>}
+        {commits.map((c) => (
+          <div key={c.id} className="comment-card-dark">
+            <div className="comment-header">
+              <a href={c.url} target="_blank" rel="noreferrer" style={{ color: '#a5b4fc', fontFamily: 'monospace', fontSize: '0.85rem' }}>{c.commit_sha.slice(0, 8)}</a>
+              <span className="comment-author" style={{ marginLeft: '0.5rem' }}>{c.author}</span>
+              <span className="comment-date">{new Date(c.committed_at).toLocaleString()}</span>
+            </div>
+            <p className="comment-content">{c.message}</p>
+          </div>
+        ))}
       </div>
 
       <div className="comments-section-dark">

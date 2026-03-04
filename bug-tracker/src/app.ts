@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import http from 'http';
 import express, { Request, Response, NextFunction } from 'express';
 import cookieParser from 'cookie-parser';
@@ -9,6 +10,8 @@ import commentsRouter, { deleteComment } from './routes/comments';
 import authRouter from './routes/auth';
 import { requireAuth } from './middleware/auth';
 import { broadcast } from './ws';
+import { startPoller, syncCommits } from './gitlab/poller';
+import db from './db/database';
 
 const app = express();
 app.use(express.json({ limit: '100mb' }));
@@ -38,6 +41,18 @@ app.use('/bugs/:id/comments', commentsRouter);
 // Nested: GET /projects/:id/bugs
 app.use('/projects/:id/bugs', bugsRouter);
 
+// GET /bugs/:id/commits
+app.get('/bugs/:id/commits', (req, res) => {
+  const commits = db.prepare('SELECT * FROM bug_commits WHERE bug_id = ? ORDER BY committed_at DESC').all(req.params.id);
+  res.json(commits);
+});
+
+// POST /gitlab/sync — manual sync trigger
+app.post('/gitlab/sync', (_req, res) => {
+  syncCommits().catch(console.error);
+  res.json({ ok: true });
+});
+
 // DELETE /comments/:id
 const commentDeleteRouter = express.Router();
 deleteComment(commentDeleteRouter);
@@ -55,6 +70,7 @@ const server = http.createServer(app);
 initWss(server);
 server.listen(PORT, () => {
   console.log(`Bug Tracker API running on http://localhost:${PORT}`);
+  startPoller();
 });
 
 export default app;

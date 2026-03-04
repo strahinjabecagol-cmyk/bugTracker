@@ -11,6 +11,10 @@ yarn-debug.log*
 *.suo
 *.sw?
 
+# Env files
+.env
+.env.*
+
 # SQLite database files
 *.db
 *.db-shm

@@ -51,6 +51,20 @@ db.exec(`
   );
 `);
 
+// Add bug_commits table if it doesn't exist yet
+db.exec(`
+  CREATE TABLE IF NOT EXISTS bug_commits (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    bug_id       INTEGER NOT NULL REFERENCES bugs(id) ON DELETE CASCADE,
+    commit_sha   TEXT    NOT NULL,
+    message      TEXT    NOT NULL,
+    author       TEXT    NOT NULL,
+    committed_at TEXT    NOT NULL,
+    url          TEXT    NOT NULL,
+    UNIQUE(bug_id, commit_sha)
+  );
+`);
+
 // Add bug_images table if it doesn't exist yet
 db.exec(`
   CREATE TABLE IF NOT EXISTS bug_images (
