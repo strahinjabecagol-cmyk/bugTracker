@@ -36,6 +36,7 @@ const tools = [
       type: 'object',
       properties: {
         status:     { type: 'string', enum: ['open', 'in_progress', 'resolved', 'closed'] },
+        type:       { type: 'string', enum: ['bug', 'task'] },
         priority:   { type: 'string', enum: ['low', 'medium', 'high', 'critical'] },
         severity:   { type: 'string', enum: ['minor', 'major', 'critical', 'blocker'] },
         project_id: { type: 'number' },
@@ -61,6 +62,7 @@ const tools = [
         project_id:  { type: 'number' },
         title:       { type: 'string' },
         description: { type: 'string' },
+        type:        { type: 'string', enum: ['bug', 'task'] },
         priority:    { type: 'string', enum: ['low', 'medium', 'high', 'critical'] },
         severity:    { type: 'string', enum: ['minor', 'major', 'critical', 'blocker'] },
         reporter_id: { type: 'number' },
@@ -78,6 +80,7 @@ const tools = [
         id:          { type: 'number' },
         title:       { type: 'string' },
         description: { type: 'string' },
+        type:        { type: 'string', enum: ['bug', 'task'] },
         status:      { type: 'string', enum: ['open', 'in_progress', 'resolved', 'closed'] },
         priority:    { type: 'string', enum: ['low', 'medium', 'high', 'critical'] },
         severity:    { type: 'string', enum: ['minor', 'major', 'critical', 'blocker'] },
@@ -207,6 +210,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools }));
 
 const GetBugsInput = z.object({
   status:      z.string().optional(),
+  type:        z.string().optional(),
   priority:    z.string().optional(),
   severity:    z.string().optional(),
   project_id:  z.number().optional(),
@@ -227,6 +231,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       const values: unknown[] = [];
       if (input.project_id)  { conditions.push('project_id = ?');  values.push(input.project_id); }
       if (input.status)      { conditions.push('status = ?');      values.push(input.status); }
+      if (input.type)        { conditions.push('type = ?');        values.push(input.type); }
       if (input.priority)    { conditions.push('priority = ?');    values.push(input.priority); }
       if (input.severity)    { conditions.push('severity = ?');    values.push(input.severity); }
       if (input.assignee_id) { conditions.push('assignee_id = ?'); values.push(input.assignee_id); }
@@ -247,17 +252,18 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         project_id:  z.number(),
         title:       z.string(),
         description: z.string().optional().default(''),
+        type:        z.enum(['bug', 'task']).optional().default('bug'),
         priority:    z.string().optional().default('medium'),
         severity:    z.string().optional().default('major'),
         reporter_id: z.number(),
         assignee_id: z.number().optional(),
       }).parse(args);
       const info = db.prepare(`
-        INSERT INTO bugs (project_id, title, description, priority, severity, reporter_id, assignee_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO bugs (project_id, title, description, type, priority, severity, reporter_id, assignee_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         input.project_id, input.title, input.description,
-        input.priority, input.severity, input.reporter_id,
+        input.type, input.priority, input.severity, input.reporter_id,
         input.assignee_id ?? null,
       );
       const bug = db.prepare('SELECT * FROM bugs WHERE id = ?').get(info.lastInsertRowid);
@@ -270,6 +276,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         id:          z.number(),
         title:       z.string().optional(),
         description: z.string().optional(),
+        type:        z.enum(['bug', 'task']).optional(),
         status:      z.string().optional(),
         priority:    z.string().optional(),
         severity:    z.string().optional(),
@@ -280,11 +287,11 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       const merged = { ...existing, ...input };
       db.prepare(`
         UPDATE bugs
-        SET title = ?, description = ?, status = ?, priority = ?, severity = ?,
+        SET title = ?, description = ?, type = ?, status = ?, priority = ?, severity = ?,
             assignee_id = ?, updated_at = datetime('now')
         WHERE id = ?
       `).run(
-        merged.title, merged.description, merged.status,
+        merged.title, merged.description, merged.type, merged.status,
         merged.priority, merged.severity, merged.assignee_id,
         input.id,
       );

@@ -8,9 +8,17 @@ import UserList from './pages/UserList';
 import BoardView from './pages/BoardView';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ComponentPlayground from './pages/ComponentPlayground';
 import { ProjectProvider } from './context/ProjectContext';
 import { AuthProvider } from './context/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
+import { useAuth } from './context/AuthContext';
+
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  if (user?.role !== 'admin') return null;
+  return <>{children}</>;
+}
 
 export default function App() {
   return (
@@ -34,6 +42,7 @@ export default function App() {
                     <Route path="/board" element={<BoardView />} />
                     <Route path="/projects" element={<ProjectList />} />
                     <Route path="/users" element={<UserList />} />
+                    <Route path="/components" element={<AdminRoute><ComponentPlayground /></AdminRoute>} />
                   </Routes>
                 </main>
               </ProjectProvider>

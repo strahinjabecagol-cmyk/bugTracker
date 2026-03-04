@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
+import Badge from './Badge';
 
-export default function SidebarDropdown<T extends string>({ label, value, options, onChange }: {
+export default function SidebarDropdown<T extends string>({ label, value, options, onChange, badgeType }: {
   label: string;
   value: T | null | undefined;
   options: { value: T; label: string }[];
   onChange: (v: T) => void;
+  badgeType?: 'status' | 'priority' | 'severity' | 'type';
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -25,7 +27,7 @@ export default function SidebarDropdown<T extends string>({ label, value, option
       <div className="priority-dropdown" ref={ref}>
         <button
           type="button"
-          className={`priority-dropdown-trigger has-selection${open ? ' open' : ''}`}
+          className={`priority-dropdown-trigger${current ? ' has-selection' : ''}${open ? ' open' : ''}`}
           onClick={() => setOpen((o) => !o)}
         >
           <span>{current?.label ?? '—'}</span>
@@ -39,7 +41,10 @@ export default function SidebarDropdown<T extends string>({ label, value, option
                 className={`priority-dropdown-item${value === o.value ? ' active' : ''}`}
                 onClick={() => { onChange(o.value); setOpen(false); }}
               >
-                <span>{o.label}</span>
+                {badgeType
+                  ? <Badge value={o.value} type={badgeType} />
+                  : <span>{o.label}</span>
+                }
               </div>
             ))}
           </div>
