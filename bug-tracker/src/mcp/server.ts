@@ -30,8 +30,8 @@ const server = new Server(
 
 const tools = [
   {
-    name: 'get_bugs',
-    description: 'List bugs with optional filters.',
+    name: 'get_items',
+    description: 'List items (bugs and tasks) with optional filters.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -45,8 +45,8 @@ const tools = [
     },
   },
   {
-    name: 'get_bug',
-    description: 'Get a single bug by id.',
+    name: 'get_item',
+    description: 'Get a single item (bug or task) by id.',
     inputSchema: {
       type: 'object',
       properties: { id: { type: 'number' } },
@@ -54,8 +54,8 @@ const tools = [
     },
   },
   {
-    name: 'create_bug',
-    description: 'Create a new bug.',
+    name: 'create_item',
+    description: 'Create a new item. type is required — use "task" for tasks, "bug" for bugs.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -68,12 +68,12 @@ const tools = [
         reporter_id: { type: 'number' },
         assignee_id: { type: 'number' },
       },
-      required: ['project_id', 'title', 'reporter_id'],
+      required: ['project_id', 'title', 'reporter_id', 'type'],
     },
   },
   {
-    name: 'update_bug',
-    description: 'Update a bug by id.',
+    name: 'update_item',
+    description: 'Update an item (bug or task) by id.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -90,8 +90,8 @@ const tools = [
     },
   },
   {
-    name: 'delete_bug',
-    description: 'Delete a bug by id.',
+    name: 'delete_item',
+    description: 'Delete an item (bug or task) by id.',
     inputSchema: {
       type: 'object',
       properties: { id: { type: 'number' } },
@@ -225,7 +225,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   });
 
   switch (name) {
-    case 'get_bugs': {
+    case 'get_items': {
       const input = GetBugsInput.parse(args ?? {});
       const conditions: string[] = [];
       const values: unknown[] = [];
@@ -240,19 +240,19 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       return text(bugs);
     }
 
-    case 'get_bug': {
+    case 'get_item': {
       const { id } = z.object({ id: z.number() }).parse(args);
       const bug = db.prepare('SELECT * FROM bugs WHERE id = ?').get(id);
       if (!bug) return text({ error: 'Bug not found' });
       return text(bug);
     }
 
-    case 'create_bug': {
+    case 'create_item': {
       const input = z.object({
         project_id:  z.number(),
         title:       z.string(),
         description: z.string().optional().default(''),
-        type:        z.enum(['bug', 'task']).optional().default('bug'),
+        type:        z.enum(['bug', 'task']),
         priority:    z.string().optional().default('medium'),
         severity:    z.string().optional().default('major'),
         reporter_id: z.number(),
@@ -271,7 +271,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       return text(bug);
     }
 
-    case 'update_bug': {
+    case 'update_item': {
       const input = z.object({
         id:          z.number(),
         title:       z.string().optional(),
@@ -300,7 +300,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       return text(bug);
     }
 
-    case 'delete_bug': {
+    case 'delete_item': {
       const { id } = z.object({ id: z.number() }).parse(args);
       db.prepare('DELETE FROM bugs WHERE id = ?').run(id);
       await wsBroadcast({ type: 'bug_deleted', id });
