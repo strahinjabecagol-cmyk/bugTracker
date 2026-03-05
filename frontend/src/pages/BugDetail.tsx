@@ -206,6 +206,7 @@ export default function BugDetail() {
               value={editData.type}
               options={[{ value: 'bug', label: 'Bug' }, { value: 'task', label: 'Task' }]}
               onChange={(v) => setEditData((d) => ({ ...d, type: v as Bug['type'] }))}
+              badgeType="type"
             />
             <SidebarDropdown
               label="Status"
@@ -217,6 +218,7 @@ export default function BugDetail() {
                 { value: 'closed', label: 'Closed' },
               ]}
               onChange={(v) => setEditData((d) => ({ ...d, status: v as Bug['status'] }))}
+              badgeType="status"
             />
             <SidebarDropdown
               label="Priority"
@@ -228,6 +230,7 @@ export default function BugDetail() {
                 { value: 'critical', label: 'Critical' },
               ]}
               onChange={(v) => setEditData((d) => ({ ...d, priority: v as Bug['priority'] }))}
+              badgeType="priority"
             />
             <SidebarDropdown
               label="Severity"
@@ -239,6 +242,7 @@ export default function BugDetail() {
                 { value: 'blocker', label: 'Blocker' },
               ]}
               onChange={(v) => setEditData((d) => ({ ...d, severity: v as Bug['severity'] }))}
+              badgeType="severity"
             />
             <SidebarDropdown
               label="Assignee"
@@ -295,13 +299,12 @@ export default function BugDetail() {
         <div className="comment-form-dark">
           <h4>Add Comment</h4>
           <form onSubmit={handleAddComment}>
-            <div className="form-group">
-              <label>User</label>
-              <select value={commentUserId} onChange={(e) => setCommentUserId(e.target.value)} required>
-                <option value="">Select user...</option>
-                {users.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
-              </select>
-            </div>
+            <SidebarDropdown
+              label="User"
+              value={commentUserId}
+              options={[{ value: '', label: 'Select user...' }, ...users.map((u) => ({ value: String(u.id), label: u.name }))]}
+              onChange={(v) => setCommentUserId(v)}
+            />
             <div className="form-group">
               <label>Comment</label>
               <textarea

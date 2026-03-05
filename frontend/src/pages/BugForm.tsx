@@ -99,23 +99,22 @@ export default function BugForm() {
         <div className="detail-card">
           <div className="detail-card-body">
             <div className="detail-card-main">
-              <div style={{ display: 'flex', gap: '1rem' }}>
-                <div style={{ maxWidth: '220px', flex: 1 }}>
-                  <SidebarDropdown
-                    label="Project *"
-                    value={projectId as string}
-                    options={[{ value: '', label: 'Select project...' }, ...projects.map((p) => ({ value: String(p.id), label: p.name }))]}
-                    onChange={(v) => setProjectId(v)}
-                  />
-                </div>
-                <div style={{ maxWidth: '160px', flex: 1 }}>
-                  <SidebarDropdown
-                    label="Type"
-                    value={type}
-                    options={[{ value: 'bug', label: 'Bug' }, { value: 'task', label: 'Task' }]}
-                    onChange={(v) => setType(v as typeof type)}
-                  />
-                </div>
+              <div style={{ display: 'flex', gap: '1rem', marginLeft: '5px' }}>
+                <SidebarDropdown
+                  label="Project *"
+                  value={projectId as string}
+                  options={[{ value: '', label: 'Select project...' }, ...projects.map((p) => ({ value: String(p.id), label: p.name }))]}
+                  onChange={(v) => setProjectId(v)}
+                  className="form-group-inline"
+                />
+                <SidebarDropdown
+                  label="Type"
+                  value={type}
+                  options={[{ value: 'bug', label: 'Bug' }, { value: 'task', label: 'Task' }]}
+                  onChange={(v) => setType(v as typeof type)}
+                  badgeType="type"
+                  className="form-group-inline"
+                />
               </div>
               <div className="form-group" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                 <label>Description</label>
@@ -194,6 +193,7 @@ export default function BugForm() {
                   { value: 'critical', label: 'Critical' },
                 ]}
                 onChange={(v) => setPriority(v as typeof priority)}
+                badgeType="priority"
               />
               <SidebarDropdown
                 label="Severity"
@@ -205,6 +205,7 @@ export default function BugForm() {
                   { value: 'blocker', label: 'Blocker' },
                 ]}
                 onChange={(v) => setSeverity(v as typeof severity)}
+                badgeType="severity"
               />
             </div>
           </div>

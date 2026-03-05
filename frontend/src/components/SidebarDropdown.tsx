@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import Badge from './Badge';
 
-export default function SidebarDropdown<T extends string>({ label, value, options, onChange, badgeType }: {
+export default function SidebarDropdown<T extends string>({ label, value, options, onChange, badgeType, className }: {
   label: string;
   value: T | null | undefined;
   options: { value: T; label: string }[];
   onChange: (v: T) => void;
   badgeType?: 'status' | 'priority' | 'severity' | 'type';
+  className?: string;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -22,7 +23,7 @@ export default function SidebarDropdown<T extends string>({ label, value, option
   const current = options.find((o) => o.value === value);
 
   return (
-    <div className="form-group">
+    <div className={`form-group${className ? ` ${className}` : ''}`}>
       <label>{label}</label>
       <div className="priority-dropdown" ref={ref}>
         <button
@@ -38,12 +39,12 @@ export default function SidebarDropdown<T extends string>({ label, value, option
             {options.map((o) => (
               <div
                 key={o.value}
-                className={`priority-dropdown-item${value === o.value ? ' active' : ''}`}
+                className={`priority-dropdown-item${value === o.value ? ' active' : ''}${!badgeType ? ' plain' : ''}`}
                 onClick={() => { onChange(o.value); setOpen(false); }}
               >
                 {badgeType
                   ? <Badge value={o.value} type={badgeType} />
-                  : <span>{o.label}</span>
+                  : <span><span>{o.label}</span></span>
                 }
               </div>
             ))}
