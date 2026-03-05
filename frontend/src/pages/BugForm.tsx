@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createBug, getProjects, getUsers } from '../api';
-import type { Project, User } from '../types';
+import { createBug, getProjects, getUsers, getBugs, addLink } from '../api';
+import type { Bug, Project, User } from '../types';
 import { useProject } from '../context/ProjectContext';
 import { useAuth } from '../context/AuthContext';
 import SidebarDropdown from '../components/SidebarDropdown';
 import Button from '../components/Button';
 import ConfirmModal from '../components/ConfirmModal';
+import Badge from '../components/Badge';
+import SearchBox from '../components/SearchBox';
+import type { SearchBoxItem } from '../components/SearchBox';
 
 export default function BugForm() {
   const navigate = useNavigate();
@@ -25,6 +28,9 @@ export default function BugForm() {
   const [severity, setSeverity] = useState<'minor' | 'major' | 'critical' | 'blocker'>('major');
   const [assigneeId, setAssigneeId] = useState('');
 
+  const [allBugs, setAllBugs] = useState<Bug[]>([]);
+  const [pendingLinks, setPendingLinks] = useState<SearchBoxItem[]>([]);
+
   const [images, setImages] = useState<string[]>([]);
   const [confirmRemoveImage, setConfirmRemoveImage] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -36,9 +42,10 @@ export default function BugForm() {
   }, []);
 
   useEffect(() => {
-    Promise.all([getProjects(), getUsers()]).then(([p, u]) => {
+    Promise.all([getProjects(), getUsers(), getBugs()]).then(([p, u, b]) => {
       setProjects(p);
       setUsers(u);
+      setAllBugs(b);
       if (authUser?.id) setReporterId(String(authUser.id));
     });
   }, [authUser?.id]);
@@ -63,6 +70,9 @@ export default function BugForm() {
         assignee_id: assigneeId ? Number(assigneeId) : null,
         images,
       });
+      if (pendingLinks.length > 0) {
+        await Promise.all(pendingLinks.map((l) => addLink(bug.id, l.id)));
+      }
       navigate(`/bugs/${bug.id}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to create item');
@@ -119,6 +129,7 @@ export default function BugForm() {
               <div className="form-group" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                 <label>Description</label>
                 <textarea
+                  rows={16}
                   style={{ flex: 1, resize: 'none', width: '100%' }}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -209,6 +220,36 @@ export default function BugForm() {
               />
             </div>
           </div>
+
+          {projectId && (
+            <div className="detail-card-bottom">
+              <div className="detail-card-panel">
+                <label>Linked Items ({pendingLinks.length})</label>
+                <div className="linked-item-list">
+                  {pendingLinks.length === 0 && <p className="no-linked-items">No linked items.</p>}
+                  {pendingLinks.map((l) => (
+                    <div key={l.id} className="linked-item-row">
+                      <span className="linked-item-id">#{l.id}</span>
+                      <span className="linked-item-title">{l.title}</span>
+                      <span className="searchbox-item-badges">
+                        <Badge value={l.status} type="status" />
+                        <Badge value={l.type} type="type" />
+                      </span>
+                      <Button variant="ghost" onClick={() => setPendingLinks((prev) => prev.filter((x) => x.id !== l.id))}>×</Button>
+                    </div>
+                  ))}
+                </div>
+                <div className="linked-item-search">
+                  <SearchBox
+                    items={allBugs.filter((b) => b.project_id === Number(projectId)).map((b) => ({ id: b.id, title: b.title, status: b.status, type: b.type, priority: b.priority }))}
+                    exclude={pendingLinks.map((l) => l.id)}
+                    onSelect={(item) => setPendingLinks((prev) => [...prev, item])}
+                    placeholder="Link an item…"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </form>
 

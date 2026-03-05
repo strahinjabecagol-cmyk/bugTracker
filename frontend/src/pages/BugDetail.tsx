@@ -187,7 +187,7 @@ export default function BugDetail() {
             <div className="form-group">
               <label>Description</label>
               <textarea
-                rows={8}
+                rows={16}
                 value={editData.description ?? ''}
                 onChange={(e) => setEditData((d) => ({ ...d, description: e.target.value }))}
                 placeholder="Describe the issue or task..."
