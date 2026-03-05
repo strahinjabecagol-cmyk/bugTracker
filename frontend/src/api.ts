@@ -1,5 +1,5 @@
 import type {
-  Bug, Project, User, Comment, BugCommit,
+  Bug, Project, User, Comment, BugCommit, LinkedItem,
   BugFilters, CreateBugData, UpdateBugData, AddCommentData,
   CreateProjectData, UpdateProjectData,
   CreateUserData, UpdateUserData,
@@ -105,4 +105,20 @@ export function addComment(bugId: number, data: AddCommentData): Promise<Comment
     method: 'POST',
     body: JSON.stringify(data),
   });
+}
+
+// Links
+export function getLinks(bugId: number): Promise<LinkedItem[]> {
+  return request<LinkedItem[]>(`/bugs/${bugId}/links`);
+}
+
+export function addLink(bugId: number, linkedBugId: number): Promise<LinkedItem[]> {
+  return request<LinkedItem[]>(`/bugs/${bugId}/links`, {
+    method: 'POST',
+    body: JSON.stringify({ linked_bug_id: linkedBugId }),
+  });
+}
+
+export function removeLink(bugId: number, linkedBugId: number): Promise<void> {
+  return request<void>(`/bugs/${bugId}/links/${linkedBugId}`, { method: 'DELETE' });
 }

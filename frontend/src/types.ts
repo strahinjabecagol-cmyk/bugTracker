@@ -46,6 +46,15 @@ export interface Bug {
   images?: BugImage[];
 }
 
+export interface LinkedItem {
+  id: number;
+  bug_id: number;
+  title: string;
+  status: Bug['status'];
+  type: Bug['type'];
+  priority: Bug['priority'];
+}
+
 export interface Comment {
   id: number;
   bug_id: number;

@@ -7,6 +7,7 @@ import usersRouter    from './routes/users';
 import projectsRouter from './routes/projects';
 import bugsRouter     from './routes/bugs';
 import commentsRouter, { deleteComment } from './routes/comments';
+import linksRouter from './routes/links';
 import authRouter from './routes/auth';
 import { requireAuth } from './middleware/auth';
 import { broadcast } from './ws';
@@ -37,6 +38,9 @@ app.use('/bugs',     bugsRouter);
 
 // Nested: GET/POST /bugs/:id/comments
 app.use('/bugs/:id/comments', commentsRouter);
+
+// Nested: GET/POST/DELETE /bugs/:id/links
+app.use('/bugs/:id/links', linksRouter);
 
 // Nested: GET /projects/:id/bugs
 app.use('/projects/:id/bugs', bugsRouter);

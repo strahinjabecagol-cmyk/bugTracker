@@ -3,6 +3,21 @@ import Button from '../components/Button';
 import Badge from '../components/Badge';
 import ConfirmModal from '../components/ConfirmModal';
 import SidebarDropdown from '../components/SidebarDropdown';
+import SearchBox from '../components/SearchBox';
+import type { SearchBoxItem } from '../components/SearchBox';
+
+const MOCK_ITEMS: SearchBoxItem[] = [
+  { id: 1,  title: 'Login page crashes on empty password',   status: 'open',        type: 'bug',  priority: 'critical' },
+  { id: 2,  title: 'Add dark mode toggle to settings',       status: 'in_progress', type: 'task', priority: 'medium'   },
+  { id: 3,  title: 'API returns 500 on malformed JSON body', status: 'resolved',    type: 'bug',  priority: 'high'     },
+  { id: 4,  title: 'Migrate CI pipeline to GitHub Actions',  status: 'closed',      type: 'task', priority: 'low'      },
+  { id: 5,  title: 'Board cards display wrong assignee',     status: 'in_progress', type: 'bug',  priority: 'high'     },
+  { id: 6,  title: 'Implement item linking feature',         status: 'open',        type: 'task', priority: 'medium'   },
+  { id: 7,  title: 'Sidebar dropdown z-index overlap',       status: 'resolved',    type: 'bug',  priority: 'low'      },
+  { id: 8,  title: 'Pagination for bug list endpoint',       status: 'open',        type: 'task', priority: 'medium'   },
+  { id: 9,  title: 'File upload size limit not enforced',    status: 'open',        type: 'bug',  priority: 'critical' },
+  { id: 10, title: 'Export bugs to CSV',                     status: 'closed',      type: 'task', priority: 'low'      },
+];
 
 const section = (title: string, children: React.ReactNode) => (
   <div style={{ marginBottom: '3rem' }}>
@@ -22,6 +37,7 @@ export default function ComponentPlayground() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmLastAction, setConfirmLastAction] = useState('');
   const [dropdownVal, setDropdownVal] = useState<string>('medium');
+  const [searchSelected, setSearchSelected] = useState<SearchBoxItem | null>(null);
 
   return (
     <div className="page" style={{ maxWidth: 900 }}>
@@ -115,6 +131,23 @@ export default function ComponentPlayground() {
           />
         </div>
         <span style={{ color: '#64748b', fontSize: 'var(--fs-md)' }}>Selected: <strong style={{ color: '#e2e8f0' }}>{dropdownVal}</strong></span>
+      </>)}
+
+      {/* ── SearchBox ── */}
+      {section('SearchBox', <>
+        <div style={{ width: '100%', maxWidth: 480 }}>
+          <SearchBox
+            label="Link Item"
+            items={MOCK_ITEMS}
+            onSelect={(item) => setSearchSelected(item)}
+            placeholder="Search by ID or title…"
+          />
+        </div>
+        {searchSelected && (
+          <div style={{ color: '#64748b', fontSize: 'var(--fs-md)', marginTop: '0.5rem' }}>
+            Selected: <strong style={{ color: '#e2e8f0' }}>#{searchSelected.id} — {searchSelected.title}</strong>
+          </div>
+        )}
       </>)}
 
       {/* ── ConfirmModal ── */}

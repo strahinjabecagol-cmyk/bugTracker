@@ -75,6 +75,18 @@ db.exec(`
   );
 `);
 
+// Add item_links table if it doesn't exist yet
+db.exec(`
+  CREATE TABLE IF NOT EXISTS item_links (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    bug_id        INTEGER NOT NULL REFERENCES bugs(id) ON DELETE CASCADE,
+    linked_bug_id INTEGER NOT NULL REFERENCES bugs(id) ON DELETE CASCADE,
+    created_at    TEXT    NOT NULL DEFAULT (datetime('now')),
+    UNIQUE(bug_id, linked_bug_id),
+    CHECK(bug_id != linked_bug_id)
+  );
+`);
+
 // Add password_hash column if it doesn't exist yet (safe migration)
 try {
   db.exec(`ALTER TABLE users ADD COLUMN password_hash TEXT`);

@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getBug, updateBug, deleteBug, getComments, addComment, getUsers, getProjects, getCommits, syncCommits } from '../api';
-import type { Bug, Comment, User, Project, BugCommit } from '../types';
+import { getBug, getBugs, updateBug, deleteBug, getComments, addComment, getUsers, getProjects, getCommits, syncCommits, getLinks, addLink, removeLink } from '../api';
+import type { Bug, Comment, User, Project, BugCommit, LinkedItem } from '../types';
 import { useAuth } from '../context/AuthContext';
 import SidebarDropdown from '../components/SidebarDropdown';
 import Button from '../components/Button';
 import ConfirmModal from '../components/ConfirmModal';
+import Badge from '../components/Badge';
+import SearchBox from '../components/SearchBox';
+import type { SearchBoxItem } from '../components/SearchBox';
 
 export default function BugDetail() {
   const { id } = useParams<{ id: string }>();
@@ -31,6 +34,11 @@ export default function BugDetail() {
   const [commits, setCommits] = useState<BugCommit[]>([]);
   const [syncing, setSyncing] = useState(false);
 
+  const [links, setLinks] = useState<LinkedItem[]>([]);
+  const [allBugs, setAllBugs] = useState<Bug[]>([]);
+  const [linkError, setLinkError] = useState('');
+  const [confirmRemoveLink, setConfirmRemoveLink] = useState<LinkedItem | null>(null);
+
   const [commentContent, setCommentContent] = useState('');
   const [commentUserId, setCommentUserId] = useState('');
   const [commentError, setCommentError] = useState('');
@@ -42,8 +50,8 @@ export default function BugDetail() {
   }, []);
 
   useEffect(() => {
-    Promise.all([getBug(bugId), getComments(bugId), getUsers(), getProjects(), getCommits(bugId)])
-      .then(([b, c, u, p, commits]) => {
+    Promise.all([getBug(bugId), getComments(bugId), getUsers(), getProjects(), getCommits(bugId), getLinks(bugId), getBugs()])
+      .then(([b, c, u, p, commits, lnks, all]) => {
         setBug(b);
         setEditData(b);
         setEditImages((b.images ?? []).map((img) => img.data_url));
@@ -51,6 +59,8 @@ export default function BugDetail() {
         setUsers(u);
         setProjects(p);
         setCommits(commits);
+        setLinks(lnks);
+        setAllBugs(all);
         if (authUser?.id) setCommentUserId(String(authUser.id));
       })
       .catch((e: Error) => setError(e.message))
@@ -94,6 +104,25 @@ export default function BugDetail() {
       navigate('/');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to delete');
+    }
+  }
+
+  async function handleSelectLink(item: SearchBoxItem) {
+    setLinkError('');
+    try {
+      const updated = await addLink(bugId, item.id);
+      setLinks(updated);
+    } catch (err) {
+      setLinkError(err instanceof Error ? err.message : 'Failed to add link');
+    }
+  }
+
+  async function handleRemoveLink(linked: LinkedItem) {
+    try {
+      await removeLink(bugId, linked.bug_id);
+      setLinks((prev) => prev.filter((l) => l.id !== linked.id));
+    } catch (err) {
+      setLinkError(err instanceof Error ? err.message : 'Failed to remove link');
     }
   }
 
@@ -252,35 +281,59 @@ export default function BugDetail() {
             />
           </div>
         </div>
-      </div>
 
-      <div className="comments-section-dark">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-          <h3 style={{ margin: 0 }}>Commits ({commits.length})</h3>
-          <Button
-            variant="ghost"
-            style={{ width: 'fit-content' }}
-            disabled={syncing}
-            onClick={async () => {
-              setSyncing(true);
-              await syncCommits().catch(console.error);
-              const updated = await getCommits(bugId).catch(() => commits);
-              setCommits(updated);
-              setSyncing(false);
-            }}
-          >{syncing ? 'Syncing...' : 'Sync'}</Button>
-        </div>
-        {commits.length === 0 && <p className="no-comments">No linked commits yet. Mention <strong>#{bug.id}</strong> in a commit message.</p>}
-        {commits.map((c) => (
-          <div key={c.id} className="comment-card-dark">
-            <div className="comment-header">
-              <a href={c.url} target="_blank" rel="noreferrer" style={{ color: '#a5b4fc', fontFamily: 'monospace', fontSize: '0.85rem' }}>{c.commit_sha.slice(0, 8)}</a>
-              <span className="comment-author" style={{ marginLeft: '0.5rem' }}>{c.author}</span>
-              <span className="comment-date">{new Date(c.committed_at).toLocaleString()}</span>
+        <div className="detail-card-bottom">
+          <div className="detail-card-panel">
+            <label>Linked Items ({links.length})</label>
+            <div className="linked-item-list">
+              {links.length === 0 && <p className="no-linked-items">No linked items.</p>}
+              {links.map((l) => (
+                <div key={l.id} className="linked-item-row">
+                  <span className="linked-item-id" onClick={() => navigate(`/bugs/${l.bug_id}`)}>#{l.bug_id}</span>
+                  <span className="linked-item-title">{l.title}</span>
+                  <span className="searchbox-item-badges">
+                    <Badge value={l.status} type="status" />
+                    <Badge value={l.type} type="type" />
+                  </span>
+                  <Button variant="ghost" onClick={() => setConfirmRemoveLink(l)}>×</Button>
+                </div>
+              ))}
             </div>
-            <p className="comment-content">{c.message}</p>
+            <div className="linked-item-search">
+              <SearchBox
+                items={allBugs.filter((b) => b.project_id === bug.project_id).map((b) => ({ id: b.id, title: b.title, status: b.status, type: b.type, priority: b.priority }))}
+                exclude={[bugId, ...links.map((l) => l.bug_id)]}
+                onSelect={handleSelectLink}
+                placeholder="Link an item…"
+              />
+              {linkError && <p className="error" style={{ marginTop: '0.5rem' }}>{linkError}</p>}
+            </div>
           </div>
-        ))}
+
+          <div className="detail-card-panel">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.75rem' }}>
+              <label style={{ margin: 0 }}>Commits ({commits.length})</label>
+              <Button variant="ghost" style={{ width: 'fit-content' }} disabled={syncing} onClick={async () => {
+                setSyncing(true);
+                await syncCommits().catch(console.error);
+                const updated = await getCommits(bugId).catch(() => commits);
+                setCommits(updated);
+                setSyncing(false);
+              }}>{syncing ? 'Syncing...' : 'Sync'}</Button>
+            </div>
+            {commits.length === 0 && <p className="no-linked-items">No linked commits yet. Mention <strong>#{bug.id}</strong> in a commit message.</p>}
+            {commits.map((c) => (
+              <div key={c.id} className="comment-card-dark">
+                <div className="comment-header">
+                  <a href={c.url} target="_blank" rel="noreferrer" style={{ color: '#a5b4fc', fontFamily: 'monospace', fontSize: '0.85rem' }}>{c.commit_sha.slice(0, 8)}</a>
+                  <span className="comment-author" style={{ marginLeft: '0.5rem' }}>{c.author}</span>
+                  <span className="comment-date">{new Date(c.committed_at).toLocaleString()}</span>
+                </div>
+                <p className="comment-content">{c.message}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       <div className="comments-section-dark">
@@ -320,6 +373,16 @@ export default function BugDetail() {
           </form>
         </div>
       </div>
+
+      {confirmRemoveLink && (
+        <ConfirmModal
+          title="Remove Link"
+          message={<>Remove link to <span className="confirm-name">#{confirmRemoveLink.bug_id}</span>?</>}
+          confirmLabel="Remove"
+          onConfirm={() => { handleRemoveLink(confirmRemoveLink); setConfirmRemoveLink(null); }}
+          onCancel={() => setConfirmRemoveLink(null)}
+        />
+      )}
 
       {confirmRemoveImage !== null && (
         <ConfirmModal
