@@ -54,7 +54,7 @@ export default function SearchBox({
   function handleKey(e: React.KeyboardEvent) {
     if (e.key === 'ArrowDown') { e.preventDefault(); setHighlighted((h) => Math.min(h + 1, filtered.length - 1)); }
     else if (e.key === 'ArrowUp') { e.preventDefault(); setHighlighted((h) => Math.max(h - 1, 0)); }
-    else if (e.key === 'Enter' && filtered.length > 0) { e.preventDefault(); select(filtered[highlighted]); }
+    else if (e.key === 'Enter') { e.preventDefault(); if (filtered.length > 0) select(filtered[highlighted]); }
     else if (e.key === 'Escape') { setOpen(false); inputRef.current?.blur(); }
   }
 
