@@ -1,4 +1,4 @@
-import { execSync } from 'child_process';
+import { execSync, spawnSync } from 'child_process';
 import db from '../db/database';
 
 const BUG_REF = /#(\d+)/;
@@ -16,10 +16,14 @@ function extractBranch(refs: string): string {
 export function syncLocalCommitsForBug(bugId: number): void {
   try {
     const root = repoRoot();
-    const output = execSync(
-      'git log --all --format=%H|||%D|||%an|||%aI|||%s',
+    // Use spawnSync with explicit args array — avoids shell pipe interpretation on Windows
+    const result = spawnSync(
+      'git',
+      ['log', '--all', '--format=%H|||%D|||%an|||%aI|||%s'],
       { cwd: root, encoding: 'utf8', maxBuffer: 20 * 1024 * 1024 }
     );
+    if (result.error) throw result.error;
+    const output = result.stdout ?? '';
 
     const insert = db.prepare(`
       INSERT OR IGNORE INTO bug_commits (bug_id, commit_sha, message, author, committed_at, url, branch)
