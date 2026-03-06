@@ -19,7 +19,6 @@ yarn-debug.log*
 *.db
 *.db-shm
 *.db-wal
+# Session report files
+SESSION-*.md
 SESSION.md
-SESSION-2.md
-SESSION-1.md
-SESSION-3.md
