@@ -58,7 +58,7 @@ export default function RiskAssessmentPanel({ bug }: RiskAssessmentPanelProps) {
 
         <div className="risk-panel-matrix">
           <RiskMatrix
-            items={projectBugs}
+            items={projectBugs.filter((b) => b.status !== 'closed')}
             highlightId={bug.id}
             hoveredId={hoveredId}
             onHover={setHoveredId}
