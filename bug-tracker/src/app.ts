@@ -12,6 +12,7 @@ import authRouter from './routes/auth';
 import { requireAuth } from './middleware/auth';
 import { broadcast } from './ws';
 import { startPoller, syncCommits } from './gitlab/poller';
+import { syncLocalCommitsForBug } from './git/localSync';
 import db from './db/database';
 
 const app = express();
@@ -45,9 +46,11 @@ app.use('/bugs/:id/links', linksRouter);
 // Nested: GET /projects/:id/bugs
 app.use('/projects/:id/bugs', bugsRouter);
 
-// GET /bugs/:id/commits
+// GET /bugs/:id/commits — syncs local git branches first, then returns stored commits
 app.get('/bugs/:id/commits', (req, res) => {
-  const commits = db.prepare('SELECT * FROM bug_commits WHERE bug_id = ? ORDER BY committed_at DESC').all(req.params.id);
+  const bugId = Number(req.params.id);
+  syncLocalCommitsForBug(bugId);
+  const commits = db.prepare('SELECT * FROM bug_commits WHERE bug_id = ? ORDER BY committed_at DESC').all(bugId);
   res.json(commits);
 });
 

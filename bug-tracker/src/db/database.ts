@@ -60,10 +60,13 @@ db.exec(`
     message      TEXT    NOT NULL,
     author       TEXT    NOT NULL,
     committed_at TEXT    NOT NULL,
-    url          TEXT    NOT NULL,
+    url          TEXT    NOT NULL DEFAULT '',
+    branch       TEXT    NOT NULL DEFAULT '',
     UNIQUE(bug_id, commit_sha)
   );
 `);
+// Migrate: add branch column if missing (existing DBs)
+try { db.exec(`ALTER TABLE bug_commits ADD COLUMN branch TEXT NOT NULL DEFAULT ''`); } catch { /* already exists */ }
 
 // Add bug_images table if it doesn't exist yet
 db.exec(`

@@ -340,8 +340,12 @@ export default function BugDetail() {
             {commits.map((c) => (
               <div key={c.id} className="comment-card-dark">
                 <div className="comment-header">
-                  <a href={c.url} target="_blank" rel="noreferrer" style={{ color: '#a5b4fc', fontFamily: 'monospace', fontSize: '0.85rem' }}>{c.commit_sha.slice(0, 8)}</a>
+                  {c.url
+                    ? <a href={c.url} target="_blank" rel="noreferrer" style={{ color: '#a5b4fc', fontFamily: 'monospace', fontSize: '0.85rem' }}>{c.commit_sha.slice(0, 8)}</a>
+                    : <span style={{ color: '#a5b4fc', fontFamily: 'monospace', fontSize: '0.85rem' }}>{c.commit_sha.slice(0, 8)}</span>
+                  }
                   <span className="comment-author" style={{ marginLeft: '0.5rem' }}>{c.author}</span>
+                  {c.branch && <span style={{ marginLeft: '0.5rem', fontFamily: 'monospace', fontSize: '0.78rem', color: '#64748b', background: 'rgba(99,102,241,0.1)', borderRadius: '4px', padding: '1px 6px' }}>{c.branch}</span>}
                   <span className="comment-date">{new Date(c.committed_at).toLocaleString()}</span>
                 </div>
                 <p className="comment-content">{c.message}</p>

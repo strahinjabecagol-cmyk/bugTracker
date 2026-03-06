@@ -21,6 +21,7 @@ export interface BugCommit {
   author: string;
   committed_at: string;
   url: string;
+  branch: string;
 }
 
 export interface BugImage {
