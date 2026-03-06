@@ -15,11 +15,12 @@ export default function RiskAssessmentPanel({ bug }: RiskAssessmentPanelProps) {
   const { bugs: projectBugs } = useProjectBugs(bug.project_id);
   const [hoveredId, setHoveredId] = useState<number | null>(null);
 
-  const ps = PRIORITY_SCORE[bug.priority];
-  const ss = SEVERITY_SCORE[bug.severity];
+  const liveBug = projectBugs.find((b) => b.id === bug.id) ?? bug;
+  const ps = PRIORITY_SCORE[liveBug.priority];
+  const ss = SEVERITY_SCORE[liveBug.severity];
   const totalScore = ps + ss;
-  const ql = quadrantLabel(bug);
-  const color = riskColor(bug);
+  const ql = quadrantLabel(liveBug);
+  const color = riskColor(liveBug);
 
   return (
     <div className="detail-card risk-assessment-panel">
@@ -34,12 +35,12 @@ export default function RiskAssessmentPanel({ bug }: RiskAssessmentPanelProps) {
         <div className="risk-current-scores">
           <div className="risk-score-row">
             <span className="risk-score-label">Priority</span>
-            <Badge value={bug.priority} type="priority" />
+            <Badge value={liveBug.priority} type="priority" />
             <span className="risk-score-num">×{ps}</span>
           </div>
           <div className="risk-score-row">
             <span className="risk-score-label">Severity</span>
-            <Badge value={bug.severity} type="severity" />
+            <Badge value={liveBug.severity} type="severity" />
             <span className="risk-score-num">×{ss}</span>
           </div>
           <div className="risk-score-total">
