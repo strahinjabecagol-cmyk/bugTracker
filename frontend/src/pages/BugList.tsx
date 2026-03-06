@@ -44,10 +44,11 @@ function useMultiFilter<T extends string>() {
 
   function clear() { setSelected(new Set()); }
 
-  function label(singular: string) {
-    if (selected.size === 0) return `All ${singular}s`;
+  function label(singular: string, plural?: string) {
+    const p = plural ?? `${singular}s`;
+    if (selected.size === 0) return `All ${p}`;
     if (selected.size === 1) return [...selected][0];
-    return `${selected.size} ${singular}s`;
+    return `${selected.size} ${p}`;
   }
 
   return { selected, open, setOpen, ref, toggle, clear, label };
@@ -55,10 +56,11 @@ function useMultiFilter<T extends string>() {
 
 type FilterHook<T extends string> = ReturnType<typeof useMultiFilter<T>>;
 
-function MultiDropdown<T extends string>({ hook, items, singular, badgeType }: {
+function MultiDropdown<T extends string>({ hook, items, singular, plural, badgeType }: {
   hook: FilterHook<T>;
   items: T[];
   singular: string;
+  plural?: string;
   badgeType: 'priority' | 'severity' | 'status' | 'type';
 }) {
   return (
@@ -67,7 +69,7 @@ function MultiDropdown<T extends string>({ hook, items, singular, badgeType }: {
         className={`priority-dropdown-trigger${hook.open ? ' open' : ''}${hook.selected.size > 0 ? ' has-selection' : ''}`}
         onClick={() => hook.setOpen((o) => !o)}
       >
-        <span>{hook.label(singular)}</span>
+        <span>{hook.label(singular, plural)}</span>
         {hook.selected.size > 0
           ? <span className="dropdown-clear" onClick={(e) => { e.stopPropagation(); hook.clear(); }}>×</span>
           : <span className="dropdown-chevron">▾</span>
@@ -212,9 +214,9 @@ export default function BugList() {
 
       <div className="filters">
         <MultiDropdown hook={bugType}  items={TYPES}      singular="type"     badgeType="type"     />
-        <MultiDropdown hook={status}   items={STATUSES}   singular="status"   badgeType="status"   />
-        <MultiDropdown hook={priority} items={PRIORITIES} singular="priority" badgeType="priority" />
-        <MultiDropdown hook={severity} items={SEVERITIES} singular="severity" badgeType="severity" />
+        <MultiDropdown hook={status}   items={STATUSES}   singular="status"   plural="statuses"   badgeType="status"   />
+        <MultiDropdown hook={priority} items={PRIORITIES} singular="priority" plural="priorities" badgeType="priority" />
+        <MultiDropdown hook={severity} items={SEVERITIES} singular="severity" plural="severities" badgeType="severity" />
       </div>
 
       {error && <p className="error">{error}</p>}
