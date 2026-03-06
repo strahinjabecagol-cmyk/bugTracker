@@ -5,7 +5,8 @@ import type { Bug } from '../types';
 import { useProject } from '../context/ProjectContext';
 import Badge from '../components/Badge';
 import RiskMatrix from '../components/RiskMatrix';
-import SidebarDropdown from '../components/SidebarDropdown';
+import MultiDropdown from '../components/MultiDropdown';
+import { useMultiFilter } from '../hooks/useMultiFilter';
 import { PRIORITY_SCORE, SEVERITY_SCORE, quadrantLabel } from '../utils/risk';
 
 export default function RiskAssessmentPage() {
@@ -14,8 +15,8 @@ export default function RiskAssessmentPage() {
   const [bugs, setBugs] = useState<Bug[]>([]);
   const [loading, setLoading] = useState(true);
   const [hoveredId, setHoveredId] = useState<number | null>(null);
-  const [typeFilter, setTypeFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const typeFilter   = useMultiFilter<Bug['type']>();
+  const statusFilter = useMultiFilter<'open' | 'in_progress' | 'resolved'>();
 
   useEffect(() => {
     document.body.style.background = '#0f172a';
@@ -33,8 +34,8 @@ export default function RiskAssessmentPage() {
 
   const visible = bugs.filter((b) => {
     if (b.status === 'closed') return false;
-    if (typeFilter !== 'all' && b.type !== typeFilter) return false;
-    if (statusFilter !== 'all' && b.status !== statusFilter) return false;
+    if (typeFilter.selected.size > 0 && !typeFilter.selected.has(b.type)) return false;
+    if (statusFilter.selected.size > 0 && !statusFilter.selected.has(b.status as 'open' | 'in_progress' | 'resolved')) return false;
     return true;
   });
 
@@ -54,29 +55,8 @@ export default function RiskAssessmentPage() {
           </p>
         </div>
         <div className="risk-filters">
-          <SidebarDropdown
-            label="Type"
-            value={typeFilter}
-            options={[
-              { value: 'all', label: 'All Types' },
-              { value: 'bug', label: 'Bug' },
-              { value: 'task', label: 'Task' },
-            ]}
-            onChange={setTypeFilter}
-            className="risk-filter-dropdown"
-          />
-          <SidebarDropdown
-            label="Status"
-            value={statusFilter}
-            options={[
-              { value: 'all', label: 'All Statuses' },
-              { value: 'open', label: 'Open' },
-              { value: 'in_progress', label: 'In Progress' },
-              { value: 'resolved', label: 'Resolved' },
-            ]}
-            onChange={setStatusFilter}
-            className="risk-filter-dropdown"
-          />
+          <MultiDropdown hook={typeFilter}   items={['bug', 'task']}                          singular="type"   plural="types"    badgeType="type"   />
+          <MultiDropdown hook={statusFilter} items={['open', 'in_progress', 'resolved']}      singular="status" plural="statuses" badgeType="status" />
         </div>
       </div>
 

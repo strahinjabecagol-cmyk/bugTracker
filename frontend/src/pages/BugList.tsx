@@ -1,10 +1,12 @@
-import { useEffect, useState, useMemo, useRef } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import Button from '../components/Button';
 import { getBugs } from '../api';
 import type { Bug } from '../types';
 import Badge from '../components/Badge';
 import { useProject } from '../context/ProjectContext';
+import { useMultiFilter } from '../hooks/useMultiFilter';
+import MultiDropdown from '../components/MultiDropdown';
 
 type SortCol = 'id' | 'title' | 'project' | 'type' | 'status' | 'priority' | 'severity';
 type SortDir = 'asc' | 'desc';
@@ -21,78 +23,6 @@ const PRIORITY_ORDER = { low: 0, medium: 1, high: 2, critical: 3 };
 const SEVERITY_ORDER = { minor: 0, major: 1, critical: 2, blocker: 3 };
 const STATUS_ORDER   = { open: 0, in_progress: 1, resolved: 2, closed: 3 };
 
-function useMultiFilter<T extends string>() {
-  const [selected, setSelected] = useState<Set<T>>(new Set());
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function onClickOutside(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener('mousedown', onClickOutside);
-    return () => document.removeEventListener('mousedown', onClickOutside);
-  }, []);
-
-  function toggle(v: T) {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      next.has(v) ? next.delete(v) : next.add(v);
-      return next;
-    });
-  }
-
-  function clear() { setSelected(new Set()); }
-
-  function label(singular: string, plural?: string) {
-    const p = plural ?? `${singular}s`;
-    if (selected.size === 0) return `All ${p}`;
-    if (selected.size === 1) return [...selected][0];
-    return `${selected.size} ${p}`;
-  }
-
-  return { selected, open, setOpen, ref, toggle, clear, label };
-}
-
-type FilterHook<T extends string> = ReturnType<typeof useMultiFilter<T>>;
-
-function MultiDropdown<T extends string>({ hook, items, singular, plural, badgeType }: {
-  hook: FilterHook<T>;
-  items: T[];
-  singular: string;
-  plural?: string;
-  badgeType: 'priority' | 'severity' | 'status' | 'type';
-}) {
-  return (
-    <div className="priority-dropdown" ref={hook.ref}>
-      <button
-        className={`priority-dropdown-trigger${hook.open ? ' open' : ''}${hook.selected.size > 0 ? ' has-selection' : ''}`}
-        onClick={() => hook.setOpen((o) => !o)}
-      >
-        <span>{hook.label(singular, plural)}</span>
-        {hook.selected.size > 0
-          ? <span className="dropdown-clear" onClick={(e) => { e.stopPropagation(); hook.clear(); }}>×</span>
-          : <span className="dropdown-chevron">▾</span>
-        }
-      </button>
-      {hook.open && (
-        <div className="priority-dropdown-menu">
-          {items.map((v) => (
-            <div
-              key={v}
-              className={`priority-dropdown-item${hook.selected.has(v) ? ' active' : ''}`}
-              onClick={() => hook.toggle(v)}
-            >
-              <span className={`badge badge-${badgeType}-${v.replace('_', '-')}`}>
-                <span>{v.replace('_', ' ')}</span>
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
 
 export default function BugList() {
   const { projects, selectedProjectId } = useProject();
