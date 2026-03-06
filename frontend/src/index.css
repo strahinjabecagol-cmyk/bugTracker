@@ -1263,20 +1263,20 @@ h4 { margin: 0 0 0.5rem; font-size: var(--fs-base); font-weight: 600; }
   background: #0f172a;
   border: 1px solid #334155;
   border-radius: 0;
-  padding: 0.5rem 0.75rem;
-  min-width: 200px;
-  max-width: 280px;
+  padding: 0.3rem 0.45rem;
+  min-width: 130px;
+  max-width: 200px;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.18rem;
   pointer-events: none;
   white-space: nowrap;
   box-shadow: var(--shadow-lg);
   z-index: 20;
 }
-.risk-tooltip-id { color: #475569; font-size: var(--fs-xs); font-weight: 700; }
-.risk-tooltip-title { color: #e2e8f0; font-size: var(--fs-sm); white-space: normal; line-height: 1.4; }
-.risk-tooltip-badges { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+.risk-tooltip-id { color: #475569; font-size: 0.48rem; font-weight: 700; letter-spacing: 0.03em; }
+.risk-tooltip-title { color: #e2e8f0; font-size: 0.52rem; white-space: normal; line-height: 1.3; }
+.risk-tooltip-badges { display: flex; gap: 0.18rem; flex-wrap: wrap; }
 
 /* X-axis */
 .risk-xaxis {
@@ -1370,10 +1370,11 @@ h4 { margin: 0 0 0.5rem; font-size: var(--fs-base); font-weight: 600; }
   border-radius: 0;
   transform: skewX(-12deg);
 }
+.risk-tooltip .badge { padding: 0.04rem 0.18rem; font-size: 0.42rem; }
 .risk-page .badge > span,
 .risk-tooltip .badge > span { display: inline-block; transform: skewX(12deg); }
-.risk-page .badge::before,
-.risk-tooltip .badge::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--stripe, transparent); }
+.risk-page .badge::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--stripe, transparent); }
+.risk-tooltip .badge::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--stripe, transparent); }
 
 .risk-page .badge-priority-low,    .risk-tooltip .badge-priority-low    { --stripe: #86efac; }
 .risk-page .badge-priority-medium, .risk-tooltip .badge-priority-medium { --stripe: #fde047; }
