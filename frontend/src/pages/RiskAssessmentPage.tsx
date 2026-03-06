@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getBugs } from '../api';
 import type { Bug } from '../types';
@@ -9,12 +9,21 @@ import MultiDropdown from '../components/MultiDropdown';
 import { useMultiFilter } from '../hooks/useMultiFilter';
 import { PRIORITY_SCORE, SEVERITY_SCORE, quadrantLabel } from '../utils/risk';
 
+type SortCol = 'id' | 'title' | 'type' | 'priority' | 'severity' | 'status' | 'quadrant';
+type SortDir = 'asc' | 'desc';
+
+const PRIORITY_ORDER = { low: 0, medium: 1, high: 2, critical: 3 };
+const SEVERITY_ORDER = { minor: 0, major: 1, critical: 2, blocker: 3 };
+const STATUS_ORDER   = { open: 0, in_progress: 1, resolved: 2, closed: 3 };
+
 export default function RiskAssessmentPage() {
   const navigate = useNavigate();
   const { selectedProjectId } = useProject();
   const [bugs, setBugs] = useState<Bug[]>([]);
   const [loading, setLoading] = useState(true);
   const [hoveredId, setHoveredId] = useState<number | null>(null);
+  const [sortCol, setSortCol] = useState<SortCol>('quadrant');
+  const [sortDir, setSortDir] = useState<SortDir>('desc');
   const typeFilter   = useMultiFilter<Bug['type']>();
   const statusFilter = useMultiFilter<'open' | 'in_progress' | 'resolved'>();
 
@@ -39,10 +48,37 @@ export default function RiskAssessmentPage() {
     return true;
   });
 
-  const sorted = [...visible].sort((a, b) =>
-    (PRIORITY_SCORE[b.priority] + SEVERITY_SCORE[b.severity]) -
-    (PRIORITY_SCORE[a.priority] + SEVERITY_SCORE[a.severity])
-  );
+  function handleSort(col: SortCol) {
+    if (col === sortCol) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    else { setSortCol(col); setSortDir(col === 'quadrant' ? 'desc' : 'asc'); }
+  }
+
+  const sorted = useMemo(() => [...visible].sort((a, b) => {
+    let cmp = 0;
+    switch (sortCol) {
+      case 'id':       cmp = a.id - b.id; break;
+      case 'title':    cmp = a.title.localeCompare(b.title); break;
+      case 'type':     cmp = a.type.localeCompare(b.type); break;
+      case 'priority': cmp = PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]; break;
+      case 'severity': cmp = SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]; break;
+      case 'status':   cmp = STATUS_ORDER[a.status] - STATUS_ORDER[b.status]; break;
+      case 'quadrant': cmp = (PRIORITY_SCORE[a.priority] + SEVERITY_SCORE[a.severity]) - (PRIORITY_SCORE[b.priority] + SEVERITY_SCORE[b.severity]); break;
+    }
+    return sortDir === 'asc' ? cmp : -cmp;
+  }), [visible, sortCol, sortDir]);
+
+  function SortIcon({ col }: { col: SortCol }) {
+    if (sortCol !== col) return <span className="sort-icon sort-icon-inactive">↕</span>;
+    return <span className="sort-icon">{sortDir === 'asc' ? '↑' : '↓'}</span>;
+  }
+
+  function Th({ col, children }: { col: SortCol; children: React.ReactNode }) {
+    return (
+      <th className={`th-sortable${sortCol === col ? ' th-sorted' : ''}`} onClick={() => handleSort(col)}>
+        {children} <SortIcon col={col} />
+      </th>
+    );
+  }
 
   return (
     <div className="page risk-page">
@@ -78,13 +114,13 @@ export default function RiskAssessmentPage() {
               <table className="table risk-table">
                 <thead>
                   <tr>
-                    <th>#</th>
-                    <th>Title</th>
-                    <th>Type</th>
-                    <th>Priority</th>
-                    <th>Severity</th>
-                    <th>Status</th>
-                    <th>Quadrant</th>
+                    <Th col="id">#</Th>
+                    <Th col="title">Title</Th>
+                    <Th col="type">Type</Th>
+                    <Th col="priority">Priority</Th>
+                    <Th col="severity">Severity</Th>
+                    <Th col="status">Status</Th>
+                    <Th col="quadrant">Quadrant</Th>
                   </tr>
                 </thead>
                 <tbody>
