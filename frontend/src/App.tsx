@@ -9,6 +9,7 @@ import BoardView from './pages/BoardView';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ComponentPlayground from './pages/ComponentPlayground';
+import RiskAssessmentPage from './pages/RiskAssessmentPage';
 import { ProjectProvider } from './context/ProjectContext';
 import { AuthProvider } from './context/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
@@ -42,6 +43,7 @@ export default function App() {
                     <Route path="/board" element={<BoardView />} />
                     <Route path="/projects" element={<ProjectList />} />
                     <Route path="/users" element={<UserList />} />
+                    <Route path="/risk" element={<RiskAssessmentPage />} />
                     <Route path="/components" element={<AdminRoute><ComponentPlayground /></AdminRoute>} />
                   </Routes>
                 </main>

@@ -9,6 +9,8 @@ import ConfirmModal from '../components/ConfirmModal';
 import Badge from '../components/Badge';
 import SearchBox from '../components/SearchBox';
 import type { SearchBoxItem } from '../components/SearchBox';
+import Tabs from '../components/Tabs';
+import RiskAssessmentPanel from '../components/RiskAssessmentPanel';
 
 export default function BugDetail() {
   const { id } = useParams<{ id: string }>();
@@ -38,6 +40,8 @@ export default function BugDetail() {
   const [allBugs, setAllBugs] = useState<Bug[]>([]);
   const [linkError, setLinkError] = useState('');
   const [confirmRemoveLink, setConfirmRemoveLink] = useState<LinkedItem | null>(null);
+
+  const [activeTab, setActiveTab] = useState('details');
 
   const [commentContent, setCommentContent] = useState('');
   const [commentUserId, setCommentUserId] = useState('');
@@ -175,7 +179,18 @@ export default function BugDetail() {
 
       {saveError && <p className="error" style={{ marginBottom: '1rem' }}>{saveError}</p>}
 
-      <div className="detail-card">
+      <Tabs
+        tabs={[
+          { id: 'details', label: 'Details' },
+          { id: 'risk', label: 'Risk Assessment' },
+        ]}
+        active={activeTab}
+        onChange={setActiveTab}
+      />
+
+      {activeTab === 'risk' && <RiskAssessmentPanel bug={bug} />}
+
+      {activeTab === 'details' && <div className="detail-card">
         <div className="detail-card-body">
           <div className="detail-card-main">
             <div className="detail-info-row">
@@ -334,9 +349,9 @@ export default function BugDetail() {
             ))}
           </div>
         </div>
-      </div>
+      </div>}
 
-      <div className="comments-section-dark">
+      {activeTab === 'details' && <div className="comments-section-dark">
         <h3>Comments ({comments.length})</h3>
         {comments.length === 0 && <p className="no-comments">No comments yet.</p>}
         {comments.map((c) => (
@@ -372,7 +387,7 @@ export default function BugDetail() {
             <Button type="submit" variant="primary" disabled={submittingComment}>{submittingComment ? 'Posting...' : 'Post Comment'}</Button>
           </form>
         </div>
-      </div>
+      </div>}
 
       {confirmRemoveLink && (
         <ConfirmModal
