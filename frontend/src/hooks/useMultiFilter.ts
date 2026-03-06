@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 
-export function useMultiFilter<T extends string>() {
-  const [selected, setSelected] = useState<Set<T>>(new Set());
+export function useMultiFilter<T extends string>(initialValues?: T[]) {
+  const [selected, setSelected] = useState<Set<T>>(new Set(initialValues));
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 

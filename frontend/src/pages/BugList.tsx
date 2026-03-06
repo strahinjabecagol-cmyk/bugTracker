@@ -70,7 +70,7 @@ export default function BugList() {
 
   const priority = useMultiFilter<Priority>();
   const severity = useMultiFilter<Severity>();
-  const status   = useMultiFilter<Status>();
+  const status   = useMultiFilter<Status>(['open', 'in_progress', 'resolved']);
   const bugType  = useMultiFilter<BugType>();
 
   useEffect(() => {
