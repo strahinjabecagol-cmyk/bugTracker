@@ -31,7 +31,7 @@ const server = new Server(
 const tools = [
   {
     name: 'get_items',
-    description: 'List items (bugs and tasks) with optional filters.',
+    description: 'List items (bugs and tasks) with optional filters. Always pass project_id to scope results to a single project — required for risk assessment workflows.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -179,6 +179,39 @@ const tools = [
     },
   },
   {
+    name: 'get_item_links',
+    description: 'Get all items linked to a given item (bidirectional).',
+    inputSchema: {
+      type: 'object',
+      properties: { item_id: { type: 'number' } },
+      required: ['item_id'],
+    },
+  },
+  {
+    name: 'link_items',
+    description: 'Create a bidirectional link between two items.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        item_id:        { type: 'number' },
+        linked_item_id: { type: 'number' },
+      },
+      required: ['item_id', 'linked_item_id'],
+    },
+  },
+  {
+    name: 'unlink_items',
+    description: 'Remove a link between two items.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        item_id:        { type: 'number' },
+        linked_item_id: { type: 'number' },
+      },
+      required: ['item_id', 'linked_item_id'],
+    },
+  },
+  {
     name: 'add_comment',
     description: 'Add a comment to a bug.',
     inputSchema: {
@@ -200,6 +233,18 @@ const tools = [
       required: ['bug_id'],
     },
   },
+  {
+    name: 'assess_item_risk',
+    description: 'Fetch full context for an item to perform an AI risk assessment. Pass project_id to validate the item belongs to that project and scope linked items to the same project. Returns item details, comments, and linked items so the caller can suggest a risk quadrant (critical / monitor / plan / low_risk) with reasoning.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id:         { type: 'number' },
+        project_id: { type: 'number', description: 'Scope the assessment to this project. Returns an error if the item does not belong to it.' },
+      },
+      required: ['id', 'project_id'],
+    },
+  },
 ];
 
 // ── List tools ────────────────────────────────────────────────────────────────
@@ -213,8 +258,8 @@ const GetBugsInput = z.object({
   type:        z.string().optional(),
   priority:    z.string().optional(),
   severity:    z.string().optional(),
-  project_id:  z.number().optional(),
-  assignee_id: z.number().optional(),
+  project_id:  z.coerce.number().optional(),
+  assignee_id: z.coerce.number().optional(),
 });
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
@@ -241,7 +286,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
 
     case 'get_item': {
-      const { id } = z.object({ id: z.number() }).parse(args);
+      const { id } = z.object({ id: z.coerce.number() }).parse(args);
       const bug = db.prepare('SELECT * FROM bugs WHERE id = ?').get(id);
       if (!bug) return text({ error: 'Bug not found' });
       return text(bug);
@@ -249,14 +294,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     case 'create_item': {
       const input = z.object({
-        project_id:  z.number(),
+        project_id:  z.coerce.number(),
         title:       z.string(),
         description: z.string().optional().default(''),
         type:        z.enum(['bug', 'task']),
         priority:    z.string().optional().default('medium'),
         severity:    z.string().optional().default('major'),
-        reporter_id: z.number(),
-        assignee_id: z.number().optional(),
+        reporter_id: z.coerce.number(),
+        assignee_id: z.coerce.number().optional(),
       }).parse(args);
       const info = db.prepare(`
         INSERT INTO bugs (project_id, title, description, type, priority, severity, reporter_id, assignee_id)
@@ -273,14 +318,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     case 'update_item': {
       const input = z.object({
-        id:          z.number(),
+        id:          z.coerce.number(),
         title:       z.string().optional(),
         description: z.string().optional(),
         type:        z.enum(['bug', 'task']).optional(),
         status:      z.string().optional(),
         priority:    z.string().optional(),
         severity:    z.string().optional(),
-        assignee_id: z.number().nullable().optional(),
+        assignee_id: z.coerce.number().nullable().optional(),
       }).parse(args);
       const existing = db.prepare('SELECT * FROM bugs WHERE id = ?').get(input.id) as Record<string, unknown> | undefined;
       if (!existing) return text({ error: 'Bug not found' });
@@ -301,7 +346,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
 
     case 'delete_item': {
-      const { id } = z.object({ id: z.number() }).parse(args);
+      const { id } = z.object({ id: z.coerce.number() }).parse(args);
       db.prepare('DELETE FROM bugs WHERE id = ?').run(id);
       await wsBroadcast({ type: 'bug_deleted', id });
       return text({ success: true, id });
@@ -321,7 +366,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     case 'update_project': {
       const input = z.object({
-        id:          z.number(),
+        id:          z.coerce.number(),
         name:        z.string().optional(),
         description: z.string().optional(),
       }).parse(args);
@@ -335,7 +380,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
 
     case 'delete_project': {
-      const { id } = z.object({ id: z.number() }).parse(args);
+      const { id } = z.object({ id: z.coerce.number() }).parse(args);
       db.prepare('DELETE FROM projects WHERE id = ?').run(id);
       return text({ success: true, id });
     }
@@ -360,7 +405,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     case 'update_user': {
       const input = z.object({
-        id:    z.number(),
+        id:    z.coerce.number(),
         name:  z.string().optional(),
         email: z.string().optional(),
         role:  z.enum(['admin', 'developer', 'tester']).optional(),
@@ -375,13 +420,67 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
 
     case 'delete_user': {
-      const { id } = z.object({ id: z.number() }).parse(args);
+      const { id } = z.object({ id: z.coerce.number() }).parse(args);
       db.prepare('DELETE FROM users WHERE id = ?').run(id);
       return text({ success: true, id });
     }
 
+    case 'get_item_links': {
+      const { item_id } = z.object({ item_id: z.coerce.number() }).parse(args);
+      const links = db.prepare(`
+        SELECT il.id, b.id AS bug_id, b.title, b.status, b.type, b.priority
+        FROM item_links il
+        JOIN bugs b ON b.id = il.linked_bug_id
+        WHERE il.bug_id = ?
+        UNION
+        SELECT il.id, b.id AS bug_id, b.title, b.status, b.type, b.priority
+        FROM item_links il
+        JOIN bugs b ON b.id = il.bug_id
+        WHERE il.linked_bug_id = ?
+        ORDER BY il.id
+      `).all(item_id, item_id);
+      return text(links);
+    }
+
+    case 'link_items': {
+      const input = z.object({ item_id: z.coerce.number(), linked_item_id: z.coerce.number() }).parse(args);
+      const { item_id, linked_item_id } = input;
+      if (item_id === linked_item_id) return text({ error: 'Cannot link an item to itself' });
+      const [a, b] = item_id < linked_item_id ? [item_id, linked_item_id] : [linked_item_id, item_id];
+      try {
+        db.prepare('INSERT INTO item_links (bug_id, linked_bug_id) VALUES (?, ?)').run(a, b);
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e);
+        if (msg.includes('UNIQUE')) return text({ error: 'Link already exists' });
+        throw e;
+      }
+      const links = db.prepare(`
+        SELECT il.id, b2.id AS bug_id, b2.title, b2.status, b2.type, b2.priority
+        FROM item_links il
+        JOIN bugs b2 ON b2.id = il.linked_bug_id
+        WHERE il.bug_id = ?
+        UNION
+        SELECT il.id, b2.id AS bug_id, b2.title, b2.status, b2.type, b2.priority
+        FROM item_links il
+        JOIN bugs b2 ON b2.id = il.bug_id
+        WHERE il.linked_bug_id = ?
+        ORDER BY il.id
+      `).all(item_id, item_id);
+      return text(links);
+    }
+
+    case 'unlink_items': {
+      const { item_id, linked_item_id } = z.object({ item_id: z.coerce.number(), linked_item_id: z.coerce.number() }).parse(args);
+      db.prepare(`
+        DELETE FROM item_links
+        WHERE (bug_id = ? AND linked_bug_id = ?)
+           OR (bug_id = ? AND linked_bug_id = ?)
+      `).run(item_id, linked_item_id, linked_item_id, item_id);
+      return text({ success: true });
+    }
+
     case 'add_comment': {
-      const input = z.object({ bug_id: z.number(), user_id: z.number(), content: z.string() }).parse(args);
+      const input = z.object({ bug_id: z.coerce.number(), user_id: z.coerce.number(), content: z.string() }).parse(args);
       const info = db.prepare('INSERT INTO comments (bug_id, user_id, content) VALUES (?, ?, ?)').run(
         input.bug_id, input.user_id, input.content,
       );
@@ -394,13 +493,49 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
 
     case 'get_comments': {
-      const { bug_id } = z.object({ bug_id: z.number() }).parse(args);
+      const { bug_id } = z.object({ bug_id: z.coerce.number() }).parse(args);
       const comments = db.prepare(`
         SELECT c.*, u.name AS author_name
         FROM comments c JOIN users u ON u.id = c.user_id
         WHERE c.bug_id = ? ORDER BY c.id
       `).all(bug_id);
       return text(comments);
+    }
+
+    case 'assess_item_risk': {
+      const { id, project_id } = z.object({ id: z.coerce.number(), project_id: z.coerce.number() }).parse(args);
+      const item = db.prepare('SELECT * FROM bugs WHERE id = ?').get(id) as Record<string, unknown> | undefined;
+      if (!item) return text({ error: 'Item not found' });
+      if (item.project_id !== project_id) {
+        return text({ error: `Item ${id} does not belong to project ${project_id}` });
+      }
+
+      const scopeProjectId = project_id;
+
+      const comments = db.prepare(`
+        SELECT c.content, u.name AS author
+        FROM comments c JOIN users u ON u.id = c.user_id
+        WHERE c.bug_id = ? ORDER BY c.id
+      `).all(id);
+
+      const links = db.prepare(`
+        SELECT b.id, b.title, b.type, b.status, b.priority, b.severity
+        FROM item_links il
+        JOIN bugs b ON b.id = il.linked_bug_id
+        WHERE il.bug_id = ? AND b.project_id = ?
+        UNION
+        SELECT b.id, b.title, b.type, b.status, b.priority, b.severity
+        FROM item_links il
+        JOIN bugs b ON b.id = il.bug_id
+        WHERE il.linked_bug_id = ? AND b.project_id = ?
+      `).all(id, scopeProjectId, id, scopeProjectId);
+
+      return text({
+        item,
+        comments,
+        linked_items: links,
+        instructions: 'Analyze this item and return a risk assessment with: quadrant (critical|monitor|plan|low_risk), reasoning (why this quadrant), and optionally suggested_priority and suggested_severity if the current values seem miscalibrated. The quadrant is determined by: critical=high priority+high severity, monitor=high priority+low severity, plan=low priority+high severity, low_risk=low priority+low severity. NOTE: linked_items are already scoped to the same project — do not fetch items from other projects.',
+      });
     }
 
     default:
