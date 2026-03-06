@@ -31,6 +31,7 @@ export default function BugList() {
   const [error, setError] = useState('');
   const [sortCol, setSortCol] = useState<SortCol>('id');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const selectedProjectIdRef = useRef(selectedProjectId);
   useEffect(() => { selectedProjectIdRef.current = selectedProjectId; }, [selectedProjectId]);
@@ -93,11 +94,13 @@ export default function BugList() {
 
   const sorted = useMemo(() => {
     const pName = (id: number) => projects.find((p) => p.id === id)?.name ?? `${id}`;
+    const q = searchQuery.trim().toLowerCase();
     const filtered = bugs
       .filter((b) => status.selected.size   === 0 || status.selected.has(b.status))
       .filter((b) => priority.selected.size === 0 || priority.selected.has(b.priority))
       .filter((b) => severity.selected.size === 0 || severity.selected.has(b.severity))
-      .filter((b) => bugType.selected.size  === 0 || bugType.selected.has(b.type));
+      .filter((b) => bugType.selected.size  === 0 || bugType.selected.has(b.type))
+      .filter((b) => !q || String(b.id).includes(q) || b.title.toLowerCase().includes(q));
 
     return [...filtered].sort((a, b) => {
       let cmp = 0;
@@ -112,7 +115,7 @@ export default function BugList() {
       }
       return sortDir === 'asc' ? cmp : -cmp;
     });
-  }, [bugs, status.selected, priority.selected, severity.selected, bugType.selected, sortCol, sortDir, projects]);
+  }, [bugs, status.selected, priority.selected, severity.selected, bugType.selected, sortCol, sortDir, projects, searchQuery]);
 
   const projectName = (id: number) => projects.find((p) => p.id === id)?.name ?? `#${id}`;
 
@@ -143,6 +146,21 @@ export default function BugList() {
       </div>
 
       <div className="filters">
+        <div className="searchbox-control items-search">
+          <span className="searchbox-icon" aria-hidden>⌕</span>
+          <input
+            type="text"
+            className="searchbox-input"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search by ID or title…"
+            autoComplete="off"
+            spellCheck={false}
+          />
+          {searchQuery && (
+            <button type="button" className="searchbox-clear" onClick={() => setSearchQuery('')} tabIndex={-1}>×</button>
+          )}
+        </div>
         <MultiDropdown hook={bugType}  items={TYPES}      singular="type"     badgeType="type"     />
         <MultiDropdown hook={status}   items={STATUSES}   singular="status"   plural="statuses"   badgeType="status"   />
         <MultiDropdown hook={priority} items={PRIORITIES} singular="priority" plural="priorities" badgeType="priority" />

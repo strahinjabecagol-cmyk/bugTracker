@@ -264,7 +264,9 @@ h4 { margin: 0 0 0.5rem; font-size: var(--fs-base); font-weight: 600; }
 }
 
 /* ─── Filters ────────────────────────────────────── */
-.filters { display: flex; gap: 0.625rem; flex-wrap: wrap; }
+.filters { display: flex; gap: 0.625rem; flex-wrap: wrap; align-items: center; }
+
+.items-search { min-width: 220px; }
 
 .filters select {
   padding: 0.4rem 2rem 0.4rem 0.7rem;
