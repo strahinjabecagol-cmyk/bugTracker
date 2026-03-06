@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Bug } from '../types';
 import Badge from './Badge';
 import RiskMatrix from './RiskMatrix';
 import { PRIORITY_SCORE, SEVERITY_SCORE, quadrantLabel, riskColor } from '../utils/risk';
-import { getBugs } from '../api';
+import { useProjectBugs } from '../hooks/useProjectBugs';
 
 interface RiskAssessmentPanelProps {
   bug: Bug;
@@ -12,12 +12,8 @@ interface RiskAssessmentPanelProps {
 
 export default function RiskAssessmentPanel({ bug }: RiskAssessmentPanelProps) {
   const navigate = useNavigate();
-  const [projectBugs, setProjectBugs] = useState<Bug[]>([]);
+  const { bugs: projectBugs } = useProjectBugs(bug.project_id);
   const [hoveredId, setHoveredId] = useState<number | null>(null);
-
-  useEffect(() => {
-    getBugs({ project_id: bug.project_id }).then(setProjectBugs).catch(() => {});
-  }, [bug.project_id]);
 
   const ps = PRIORITY_SCORE[bug.priority];
   const ss = SEVERITY_SCORE[bug.severity];
