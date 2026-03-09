@@ -15,6 +15,10 @@ if (process.env.MCP_TRANSPORT === 'http') {
   const app = express();
   app.use(express.json());
 
+  app.get('/health', (_req, res) => {
+    res.json({ status: 'ok', transport: 'http' });
+  });
+
   app.post('/mcp', async (req, res) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
