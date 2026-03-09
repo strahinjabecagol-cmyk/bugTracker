@@ -35,9 +35,20 @@ if (process.env.MCP_TRANSPORT === 'http') {
     await transport.handleRequest(req, res, req.body);
   });
 
-  app.listen(port, () => {
+  const httpServer = app.listen(port, () => {
     console.error(`Bug Tracker MCP server started (http) on port ${port}`);
   });
+
+  const shutdown = () => {
+    console.error('Shutting down gracefully...');
+    httpServer.close(() => {
+      console.error('Server closed');
+      process.exit(0);
+    });
+  };
+
+  process.on('SIGTERM', shutdown);
+  process.on('SIGINT', shutdown);
 } else {
   async function main() {
     const server = createServer();
