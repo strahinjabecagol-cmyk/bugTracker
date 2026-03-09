@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "tsx src/app.ts",
     "mcp": "tsx src/mcp/server.ts",
+    "mcp:http": "MCP_TRANSPORT=http tsx src/mcp/server.ts",
     "seed": "tsx src/db/seed.ts",
     "build": "tsc",
     "start": "node dist/app.js"
