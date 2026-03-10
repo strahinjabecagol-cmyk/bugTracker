@@ -2,7 +2,7 @@ import { Router, Request } from 'express';
 import { z } from 'zod';
 import db from '../db/database';
 import { validate } from '../middleware/validate';
-import { requireAdmin } from '../middleware/auth';
+import { requireAdmin, requireProjectMember } from '../middleware/auth';
 import { broadcast } from '../ws';
 
 const router = Router({ mergeParams: true });
@@ -52,6 +52,12 @@ router.get('/', (req: Request, res) => {
   if (assignee_id)         { conditions.push('assignee_id = ?'); values.push(assignee_id); }
   if (type)                { conditions.push('type = ?');        values.push(type); }
 
+  // Non-admins can only see bugs in projects they are members of
+  if (req.user?.role !== 'admin') {
+    conditions.push('project_id IN (SELECT project_id FROM project_members WHERE user_id = ?)');
+    values.push(req.user!.id);
+  }
+
   const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
   const bugs = db.prepare(`SELECT * FROM bugs ${where} ORDER BY id`).all(...values);
   const result = (bugs as Record<string, unknown>[]).map((b) => ({
@@ -72,7 +78,7 @@ router.get('/:id', (req, res) => {
 });
 
 // POST /bugs
-router.post('/', validate(BugCreateSchema), (req, res) => {
+router.post('/', validate(BugCreateSchema), requireProjectMember, (req, res) => {
   const { project_id, title, description, type, priority, severity, reporter_id, assignee_id, images } =
     req.body as z.infer<typeof BugCreateSchema>;
 
@@ -93,7 +99,7 @@ router.post('/', validate(BugCreateSchema), (req, res) => {
 });
 
 // PUT /bugs/:id
-router.put('/:id', validate(BugUpdateSchema), (req, res) => {
+router.put('/:id', validate(BugUpdateSchema), requireProjectMember, (req, res) => {
   const updates = req.body as z.infer<typeof BugUpdateSchema>;
   const existing = db.prepare('SELECT * FROM bugs WHERE id = ?').get(req.params.id) as Record<string, unknown> | undefined;
   if (!existing) {

@@ -8,6 +8,7 @@ import projectsRouter from './routes/projects';
 import bugsRouter     from './routes/bugs';
 import commentsRouter, { deleteComment } from './routes/comments';
 import linksRouter from './routes/links';
+import projectMembersRouter from './routes/projectMembers';
 import authRouter from './routes/auth';
 import { requireAuth } from './middleware/auth';
 import { broadcast } from './ws';
@@ -45,6 +46,9 @@ app.use('/bugs/:id/links', linksRouter);
 
 // Nested: GET /projects/:id/bugs
 app.use('/projects/:id/bugs', bugsRouter);
+
+// Nested: GET/POST/DELETE /projects/:id/members
+app.use('/projects/:id/members', projectMembersRouter);
 
 // GET /bugs/:id/commits — syncs local git branches first, then returns stored commits
 app.get('/bugs/:id/commits', (req, res) => {

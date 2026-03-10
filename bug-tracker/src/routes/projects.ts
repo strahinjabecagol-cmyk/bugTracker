@@ -13,9 +13,19 @@ const ProjectCreateSchema = z.object({
 
 const ProjectUpdateSchema = ProjectCreateSchema.partial();
 
-// GET /projects
-router.get('/', (_req, res) => {
-  const projects = db.prepare('SELECT * FROM projects ORDER BY id').all();
+// GET /projects — admins see all; others see only their member projects
+router.get('/', (req, res) => {
+  let projects;
+  if (req.user?.role === 'admin') {
+    projects = db.prepare('SELECT * FROM projects ORDER BY id').all();
+  } else {
+    projects = db.prepare(`
+      SELECT p.* FROM projects p
+      JOIN project_members pm ON pm.project_id = p.id
+      WHERE pm.user_id = ?
+      ORDER BY p.id
+    `).all(req.user!.id);
+  }
   res.json(projects);
 });
 
@@ -33,6 +43,8 @@ router.get('/:id', (req, res) => {
 router.post('/', requireAdmin, validate(ProjectCreateSchema), (req, res) => {
   const { name, description } = req.body as z.infer<typeof ProjectCreateSchema>;
   const info = db.prepare('INSERT INTO projects (name, description) VALUES (?, ?)').run(name, description);
+  // Auto-enroll the creator as a member
+  db.prepare('INSERT OR IGNORE INTO project_members (project_id, user_id) VALUES (?, ?)').run(info.lastInsertRowid, req.user!.id);
   const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(info.lastInsertRowid);
   res.status(201).json(project);
 });
