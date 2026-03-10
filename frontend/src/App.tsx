@@ -43,7 +43,7 @@ export default function App() {
                     <Route path="/bugs/:id" element={<BugDetail />} />
                     <Route path="/board" element={<BoardView />} />
                     <Route path="/projects" element={<ProjectList />} />
-                    <Route path="/users" element={<UserList />} />
+                    <Route path="/users" element={<AdminRoute><UserList /></AdminRoute>} />
                     <Route path="/risk" element={<RiskAssessmentPage />} />
                     <Route path="/components" element={<AdminRoute><ComponentPlayground /></AdminRoute>} />
                     <Route path="/ai-usage" element={<AdminRoute><AiUsagePage /></AdminRoute>} />

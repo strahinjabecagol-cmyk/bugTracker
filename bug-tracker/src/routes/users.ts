@@ -17,7 +17,7 @@ const UserCreateSchema = z.object({
 const UserUpdateSchema = UserCreateSchema.partial();
 
 // GET /users
-router.get('/', (_req, res) => {
+router.get('/', requireAdmin, (_req, res) => {
   const users = db.prepare('SELECT * FROM users ORDER BY id').all();
   res.json(users);
 });
