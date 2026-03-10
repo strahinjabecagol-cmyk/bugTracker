@@ -178,7 +178,7 @@ h4 { margin: 0 0 0.5rem; font-size: var(--fs-base); font-weight: 600; }
 /* ─── Page layout ────────────────────────────────── */
 .main-content {
   padding: 2rem;
-  max-width: 1200px;
+  max-width: 1600px;
   margin: 0 auto;
 }
 
@@ -689,12 +689,13 @@ h4 { margin: 0 0 0.5rem; font-size: var(--fs-base); font-weight: 600; }
 .items-page .th-sorted { color: #818cf8; }
 .items-page .table { table-layout: fixed; }
 .items-page .table th:nth-child(1) { width: 64px; }
-.items-page .table th:nth-child(2) { width: auto; }
+.items-page .table th:nth-child(2) { width: 280px; }
 .items-page .table th:nth-child(3) { width: 130px; }
 .items-page .table th:nth-child(4) { width: 80px; }
 .items-page .table th:nth-child(5) { width: 116px; }
 .items-page .table th:nth-child(6) { width: 96px; }
 .items-page .table th:nth-child(7) { width: 96px; }
+.items-page .table th:nth-child(8) { width: 120px; }
 .items-page .table td:nth-child(2) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 
@@ -1078,12 +1079,12 @@ h4 { margin: 0 0 0.5rem; font-size: var(--fs-base); font-weight: 600; }
 .board-card-counts { display: flex; gap: 0.35rem; flex-shrink: 0; }
 
 /* Item meta counts (BugList title cell + board cards) */
-.item-meta-counts { display: inline-flex; gap: 0.35rem; margin-left: 0.5rem; vertical-align: middle; }
+.count-cell { text-align: center; white-space: nowrap; width: 60px; padding-left: 0.5rem !important; padding-right: 0.5rem !important; }
 .item-meta-count { font-size: 0.7rem; color: #94a3b8; background: #1e293b; border: 1px solid #334155; border-left: 3px solid #6366f1; border-radius: 0; padding: 0.05rem 0.45rem; white-space: nowrap; transform: skewX(-12deg); display: inline-block; }
 .item-meta-count > * { display: inline-block; transform: skewX(12deg); }
 
 /* Assignee cell in BugList */
-.assignee-cell { color: #cbd5e1; font-size: 0.85rem; white-space: nowrap; }
+.assignee-cell { color: #cbd5e1; font-size: 0.85rem; white-space: nowrap; width: 120px; }
 .unassigned { color: #475569; }
 
 .board-column-over { background: #eef2ff; border-color: #a5b4fc; }

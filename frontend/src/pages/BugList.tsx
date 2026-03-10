@@ -125,9 +125,9 @@ export default function BugList() {
     return <span className="sort-icon">{sortDir === 'asc' ? '↑' : '↓'}</span>;
   }
 
-  function Th({ col, children }: { col: SortCol; children: React.ReactNode }) {
+  function Th({ col, children, style }: { col: SortCol; children: React.ReactNode; style?: React.CSSProperties }) {
     return (
-      <th className={`th-sortable${sortCol === col ? ' th-sorted' : ''}`} onClick={() => handleSort(col)}>
+      <th className={`th-sortable${sortCol === col ? ' th-sorted' : ''}`} style={style} onClick={() => handleSort(col)}>
         {children} <SortIcon col={col} />
       </th>
     );
@@ -191,13 +191,7 @@ export default function BugList() {
             ) : sorted.map((bug) => (
               <tr key={bug.id}>
                 <td>#{bug.id}</td>
-                <td>
-                  <Link to={`/bugs/${bug.id}`}>{bug.title}</Link>
-                  <span className="item-meta-counts">
-                    {!!bug.link_count && <span className="item-meta-count"><span>🔗 {bug.link_count}</span></span>}
-                    {!!bug.comment_count && <span className="item-meta-count"><span>💬 {bug.comment_count}</span></span>}
-                  </span>
-                </td>
+                <td><Link to={`/bugs/${bug.id}`}>{bug.title}</Link></td>
                 <td><span className="project-pill"><span>{projectName(bug.project_id)}</span></span></td>
                 <td><Badge value={bug.type} type="type" /></td>
                 <td><Badge value={bug.status} type="status" /></td>
