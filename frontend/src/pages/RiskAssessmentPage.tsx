@@ -24,7 +24,7 @@ export default function RiskAssessmentPage() {
   const [sortCol, setSortCol] = useState<SortCol>('quadrant');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const typeFilter   = useMultiFilter<Bug['type']>();
-  const statusFilter = useMultiFilter<'open' | 'in_progress' | 'resolved'>();
+  const statusFilter = useMultiFilter<'open' | 'in_progress' | 'resolved'>(['open', 'in_progress']);
 
   useEffect(() => {
     document.body.style.background = '#0f172a';
