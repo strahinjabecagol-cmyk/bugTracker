@@ -211,16 +211,6 @@ export default function ProjectList() {
         />
       )}
 
-      {confirmRemoveMember && (
-        <ConfirmModal
-          title="Remove Member"
-          message={<>Remove <span className="confirm-name">{confirmRemoveMember.name}</span> from <span className="confirm-name">{membersProject?.name}</span>?</>}
-          confirmLabel="Remove"
-          onConfirm={handleRemoveMember}
-          onCancel={() => setConfirmRemoveMember(null)}
-        />
-      )}
-
       {modal && (
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
@@ -321,6 +311,16 @@ export default function ProjectList() {
             </div>
           </div>
         </div>
+      )}
+
+      {confirmRemoveMember && (
+        <ConfirmModal
+          title="Remove Member"
+          message={<>Remove <span className="confirm-name">{confirmRemoveMember.name}</span> from <span className="confirm-name">{membersProject?.name}</span>?</>}
+          confirmLabel="Remove"
+          onConfirm={handleRemoveMember}
+          onCancel={() => setConfirmRemoveMember(null)}
+        />
       )}
     </div>
   );
