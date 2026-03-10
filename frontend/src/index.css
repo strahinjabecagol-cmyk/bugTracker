@@ -2050,6 +2050,29 @@ h4 { margin: 0 0 0.5rem; font-size: var(--fs-base); font-weight: 600; }
   font-size: 0.85rem;
 }
 
+.ai-assessment-panel .table {
+  background: #0f172a;
+  border-radius: 0;
+  border-color: #334155;
+  box-shadow: none;
+}
+
+.ai-assessment-panel .table th {
+  background: #1e293b;
+  color: #64748b;
+  border-bottom-color: #334155;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ai-assessment-panel .table td {
+  color: #cbd5e1;
+  border-bottom-color: #1e293b;
+}
+
+.ai-assessment-panel .table tbody tr:hover { background: #1e293b; }
+.ai-assessment-panel .table tbody tr:last-child td { border-bottom: none; }
+
 /* ── AI Usage Page ───────────────────────────────────────── */
 .ai-usage-summary {
   display: flex;
