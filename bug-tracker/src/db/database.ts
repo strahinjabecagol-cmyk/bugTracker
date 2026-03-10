@@ -104,6 +104,25 @@ try {
   // column already exists — ignore
 }
 
+// Add project_members table if it doesn't exist yet
+db.exec(`
+  CREATE TABLE IF NOT EXISTS project_members (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    user_id    INTEGER NOT NULL REFERENCES users(id)    ON DELETE CASCADE,
+    created_at TEXT    NOT NULL DEFAULT (datetime('now')),
+    UNIQUE(project_id, user_id)
+  );
+`);
+
+// Seed initial membership — all existing users become members of all existing projects
+// so nobody is locked out after the migration runs for the first time
+db.exec(`
+  INSERT OR IGNORE INTO project_members (project_id, user_id)
+  SELECT p.id, u.id FROM projects p CROSS JOIN users u
+  WHERE u.email != 'deleted@system';
+`);
+
 // System "Deleted User" — comments and bugs from deleted users are reassigned here
 db.prepare(`
   INSERT OR IGNORE INTO users (name, email, role, password_hash)
