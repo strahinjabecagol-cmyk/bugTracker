@@ -72,7 +72,7 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
-const PORT = process.env.PORT ?? 3000;
+const PORT = process.env.APP_PORT ?? 3000;
 const server = http.createServer(app);
 initWss(server);
 server.listen(PORT, () => {

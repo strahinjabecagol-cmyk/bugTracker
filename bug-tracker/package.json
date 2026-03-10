@@ -5,8 +5,8 @@
   "main": "dist/app.js",
   "scripts": {
     "dev": "tsx src/app.ts",
-    "mcp": "tsx src/mcp/server.ts",
-    "mcp:http": "MCP_TRANSPORT=http tsx src/mcp/server.ts",
+    "mcp": "cross-env MCP_TRANSPORT=stdio tsx src/mcp/server.ts",
+    "mcp:http": "cross-env MCP_TRANSPORT=http tsx src/mcp/server.ts",
     "seed": "tsx src/db/seed.ts",
     "build": "tsc",
     "start": "node dist/app.js"
@@ -30,6 +30,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20.11.5",
     "@types/ws": "^8.18.1",
+    "cross-env": "^10.1.0",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3"
   }

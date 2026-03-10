@@ -22,3 +22,4 @@ yarn-debug.log*
 # Session report files
 SESSION-*.md
 SESSION.md
+.mcp.json.backup
