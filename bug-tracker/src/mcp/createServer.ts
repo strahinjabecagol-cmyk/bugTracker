@@ -228,6 +228,39 @@ const tools = [
     },
   },
   {
+    name: 'get_project_members',
+    description: 'List all members of a project.',
+    inputSchema: {
+      type: 'object',
+      properties: { project_id: { type: 'number' } },
+      required: ['project_id'],
+    },
+  },
+  {
+    name: 'add_project_member',
+    description: 'Add a user to a project.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        project_id: { type: 'number' },
+        user_id:    { type: 'number' },
+      },
+      required: ['project_id', 'user_id'],
+    },
+  },
+  {
+    name: 'remove_project_member',
+    description: 'Remove a user from a project.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        project_id: { type: 'number' },
+        user_id:    { type: 'number' },
+      },
+      required: ['project_id', 'user_id'],
+    },
+  },
+  {
     name: 'assess_item_risk',
     description: 'Fetch full context for an item to perform an AI risk assessment. Pass project_id to validate the item belongs to that project and scope linked items to the same project. Returns item details, comments, and linked items so the caller can suggest a risk quadrant (critical / monitor / plan / low_risk) with reasoning.',
     inputSchema: {
@@ -500,6 +533,47 @@ export function createServer(): Server {
           WHERE c.bug_id = ? ORDER BY c.id
         `).all(bug_id);
         return text(comments);
+      }
+
+      case 'get_project_members': {
+        const { project_id } = z.object({ project_id: z.coerce.number() }).parse(args);
+        const members = db.prepare(`
+          SELECT u.id, u.name, u.email, u.role, pm.created_at AS joined_at
+          FROM project_members pm
+          JOIN users u ON u.id = pm.user_id
+          WHERE pm.project_id = ?
+          ORDER BY u.name
+        `).all(project_id);
+        return text(members);
+      }
+
+      case 'add_project_member': {
+        const input = z.object({ project_id: z.coerce.number(), user_id: z.coerce.number() }).parse(args);
+        const project = db.prepare('SELECT id FROM projects WHERE id = ?').get(input.project_id);
+        if (!project) return text({ error: 'Project not found' });
+        const user = db.prepare('SELECT id FROM users WHERE id = ?').get(input.user_id);
+        if (!user) return text({ error: 'User not found' });
+        try {
+          db.prepare('INSERT INTO project_members (project_id, user_id) VALUES (?, ?)').run(input.project_id, input.user_id);
+        } catch (e: unknown) {
+          const msg = e instanceof Error ? e.message : String(e);
+          if (msg.includes('UNIQUE')) return text({ error: 'User is already a member of this project' });
+          throw e;
+        }
+        const members = db.prepare(`
+          SELECT u.id, u.name, u.email, u.role, pm.created_at AS joined_at
+          FROM project_members pm
+          JOIN users u ON u.id = pm.user_id
+          WHERE pm.project_id = ?
+          ORDER BY u.name
+        `).all(input.project_id);
+        return text(members);
+      }
+
+      case 'remove_project_member': {
+        const input = z.object({ project_id: z.coerce.number(), user_id: z.coerce.number() }).parse(args);
+        db.prepare('DELETE FROM project_members WHERE project_id = ? AND user_id = ?').run(input.project_id, input.user_id);
+        return text({ success: true });
       }
 
       case 'assess_item_risk': {

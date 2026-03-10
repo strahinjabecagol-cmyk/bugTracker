@@ -1,5 +1,5 @@
 import type {
-  Bug, Project, User, Comment, BugCommit, LinkedItem,
+  Bug, Project, User, Comment, BugCommit, LinkedItem, ProjectMember,
   BugFilters, CreateBugData, UpdateBugData, AddCommentData,
   CreateProjectData, UpdateProjectData,
   CreateUserData, UpdateUserData,
@@ -84,6 +84,22 @@ export function updateUser(id: number, data: UpdateUserData): Promise<User> {
 
 export function deleteUser(id: number): Promise<void> {
   return request<void>(`/users/${id}`, { method: 'DELETE' });
+}
+
+// Project Members
+export function getProjectMembers(projectId: number): Promise<ProjectMember[]> {
+  return request<ProjectMember[]>(`/projects/${projectId}/members`);
+}
+
+export function addProjectMember(projectId: number, userId: number): Promise<ProjectMember[]> {
+  return request<ProjectMember[]>(`/projects/${projectId}/members`, {
+    method: 'POST',
+    body: JSON.stringify({ user_id: userId }),
+  });
+}
+
+export function removeProjectMember(projectId: number, userId: number): Promise<void> {
+  return request<void>(`/projects/${projectId}/members/${userId}`, { method: 'DELETE' });
 }
 
 // Commits

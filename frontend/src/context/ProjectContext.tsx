@@ -21,7 +21,17 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   );
 
   useEffect(() => {
-    getProjects().then(setProjects).catch(() => {});
+    getProjects().then((loaded) => {
+      setProjects(loaded);
+      // Clear selected project if it's no longer accessible (user removed from project)
+      setSelectedProjectIdState((current) => {
+        if (current && !loaded.find((p) => String(p.id) === current)) {
+          localStorage.removeItem('selectedProjectId');
+          return '';
+        }
+        return current;
+      });
+    }).catch(() => {});
   }, []);
 
   function setSelectedProjectId(id: string) {

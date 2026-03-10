@@ -56,6 +56,14 @@ export interface LinkedItem {
   priority: Bug['priority'];
 }
 
+export interface ProjectMember {
+  id: number;
+  name: string;
+  email: string;
+  role: User['role'];
+  joined_at: string;
+}
+
 export interface Comment {
   id: number;
   bug_id: number;
