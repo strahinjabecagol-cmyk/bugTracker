@@ -1079,7 +1079,7 @@ h4 { margin: 0 0 0.5rem; font-size: var(--fs-base); font-weight: 600; }
 
 /* Item meta counts (BugList title cell + board cards) */
 .item-meta-counts { display: inline-flex; gap: 0.35rem; margin-left: 0.5rem; vertical-align: middle; }
-.item-meta-count { font-size: 0.7rem; color: #94a3b8; background: #1e293b; border: 1px solid #334155; border-radius: 0; padding: 0.05rem 0.45rem; white-space: nowrap; transform: skewX(-12deg); display: inline-block; }
+.item-meta-count { font-size: 0.7rem; color: #94a3b8; background: #1e293b; border: 1px solid #334155; border-left: 3px solid #6366f1; border-radius: 0; padding: 0.05rem 0.45rem; white-space: nowrap; transform: skewX(-12deg); display: inline-block; }
 .item-meta-count > * { display: inline-block; transform: skewX(12deg); }
 
 /* Assignee cell in BugList */
