@@ -2074,22 +2074,33 @@ h4 { margin: 0 0 0.5rem; font-size: var(--fs-base); font-weight: 600; }
 .ai-assessment-panel .table tbody tr:last-child td { border-bottom: none; }
 
 /* ── AI Usage Page ───────────────────────────────────────── */
+.ai-usage-page h1 { color: #f1f5f9; }
+
 .ai-usage-summary {
   display: flex;
   gap: 1.5rem;
   flex-wrap: wrap;
   margin-bottom: 1rem;
+  justify-content: center;
 }
 
 .ai-usage-stat {
   background: #1e293b;
   border: 1px solid #334155;
-  border-radius: 8px;
-  padding: 1rem 1.5rem;
+  border-left: 16px solid #6366f1;
+  border-radius: 0;
+  padding: 1rem 1.75rem;
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  min-width: 140px;
+  min-width: 150px;
+  transform: skewX(-12deg);
+}
+
+.ai-usage-stat-label,
+.ai-usage-stat-value {
+  display: block;
+  transform: skewX(12deg);
 }
 
 .ai-usage-stat-label {
@@ -2103,6 +2114,30 @@ h4 { margin: 0 0 0.5rem; font-size: var(--fs-base); font-weight: 600; }
 .ai-usage-stat-value {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #e2e8f0;
+  color: #a5b4fc;
 }
+
+.ai-usage-page .table {
+  background: #0f172a;
+  border-radius: 0;
+  border-color: #334155;
+  border-top: 2px solid #6366f1;
+  box-shadow: none;
+}
+
+.ai-usage-page .table th {
+  background: #1e293b;
+  color: #64748b;
+  border-bottom-color: #334155;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ai-usage-page .table td {
+  color: #cbd5e1;
+  border-bottom-color: #1e293b;
+}
+
+.ai-usage-page .table tbody tr:hover { background: #1e293b; }
+.ai-usage-page .table tbody tr:last-child td { border-bottom: none; }
 
