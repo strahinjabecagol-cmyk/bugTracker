@@ -26,8 +26,6 @@ router.post('/', requireAdmin, async (req, res) => {
 
 Item: #${bug.id} — ${bug.title}
 Type: ${bug.type}
-Current Priority: ${bug.priority}
-Current Severity: ${bug.severity}
 Status: ${bug.status}
 Description: ${bug.description || '(none)'}${comments.length > 0 ? `\nComments:\n${comments.map((c) => `- ${c.content}`).join('\n')}` : ''}${links.length > 0 ? `\nLinked items:\n${links.map((l) => `- #${l.id} ${l.title} (${l.priority} priority, ${l.severity} severity)`).join('\n')}` : ''}
 
