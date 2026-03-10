@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
+import bcrypt from 'bcryptjs';
 import db, { DELETED_USER_ID } from '../db/database';
 import { validate } from '../middleware/validate';
 import { requireAdmin } from '../middleware/auth';
@@ -7,9 +8,10 @@ import { requireAdmin } from '../middleware/auth';
 const router = Router();
 
 const UserCreateSchema = z.object({
-  name:  z.string().min(1),
-  email: z.string().email(),
-  role:  z.enum(['admin', 'developer', 'tester']),
+  name:     z.string().min(1),
+  email:    z.string().email(),
+  role:     z.enum(['admin', 'developer', 'tester']),
+  password: z.string().min(6).optional(),
 });
 
 const UserUpdateSchema = UserCreateSchema.partial();
@@ -32,10 +34,11 @@ router.get('/:id', (req, res) => {
 
 // POST /users
 router.post('/', requireAdmin, validate(UserCreateSchema), (req, res) => {
-  const { name, email, role } = req.body as z.infer<typeof UserCreateSchema>;
+  const { name, email, role, password } = req.body as z.infer<typeof UserCreateSchema>;
+  const passwordHash = password ? bcrypt.hashSync(password, 10) : null;
   try {
-    const stmt = db.prepare('INSERT INTO users (name, email, role) VALUES (?, ?, ?)');
-    const info = stmt.run(name, email, role);
+    const stmt = db.prepare('INSERT INTO users (name, email, role, password_hash) VALUES (?, ?, ?, ?)');
+    const info = stmt.run(name, email, role, passwordHash);
     const user = db.prepare('SELECT * FROM users WHERE id = ?').get(info.lastInsertRowid);
     res.status(201).json(user);
   } catch (err: unknown) {

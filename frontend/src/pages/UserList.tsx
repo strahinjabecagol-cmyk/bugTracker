@@ -11,9 +11,10 @@ interface FormState {
   name: string;
   email: string;
   role: User['role'];
+  password: string;
 }
 
-const emptyForm: FormState = { name: '', email: '', role: 'developer' };
+const emptyForm: FormState = { name: '', email: '', role: 'developer', password: '' };
 
 export default function UserList() {
   const [users, setUsers] = useState<User[]>([]);
@@ -62,7 +63,7 @@ export default function UserList() {
     setSubmitting(true);
     try {
       if (modal?.mode === 'create') {
-        const created = await createUser({ name: form.name, email: form.email, role: form.role });
+        const created = await createUser({ name: form.name, email: form.email, role: form.role, password: form.password || undefined });
         setUsers((prev) => [...prev, created]);
       } else if (modal?.mode === 'edit' && modal.user) {
         const updated = await updateUser(modal.user.id, { name: form.name, email: form.email, role: form.role });
@@ -181,6 +182,18 @@ export default function UserList() {
                   <option value="admin">admin</option>
                 </select>
               </div>
+              {modal.mode === 'create' && (
+                <div className="form-group">
+                  <label>Password</label>
+                  <input
+                    type="password"
+                    value={form.password}
+                    onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
+                    placeholder="Min 6 characters (optional)"
+                    minLength={6}
+                  />
+                </div>
+              )}
               {formError && <p className="error">{formError}</p>}
               <div className="form-actions">
                 <Button type="submit" variant="primary" disabled={submitting}>{submitting ? 'Saving...' : modal.mode === 'create' ? 'Create' : 'Save'}</Button>
