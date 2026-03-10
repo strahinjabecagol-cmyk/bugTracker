@@ -104,6 +104,26 @@ try {
   // column already exists — ignore
 }
 
+// Add AI assessment columns to bugs if they don't exist yet
+try { db.exec(`ALTER TABLE bugs ADD COLUMN ai_explanation TEXT`); } catch { /* already exists */ }
+try { db.exec(`ALTER TABLE bugs ADD COLUMN ai_suggested_priority TEXT`); } catch { /* already exists */ }
+try { db.exec(`ALTER TABLE bugs ADD COLUMN ai_suggested_severity TEXT`); } catch { /* already exists */ }
+try { db.exec(`ALTER TABLE bugs ADD COLUMN ai_assessed_at TEXT`); } catch { /* already exists */ }
+try { db.exec(`ALTER TABLE bugs ADD COLUMN ai_tokens_in INTEGER`); } catch { /* already exists */ }
+try { db.exec(`ALTER TABLE bugs ADD COLUMN ai_tokens_out INTEGER`); } catch { /* already exists */ }
+
+// AI usage log — one row per assessment call
+db.exec(`
+  CREATE TABLE IF NOT EXISTS ai_usage_log (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    bug_id     INTEGER NOT NULL REFERENCES bugs(id) ON DELETE CASCADE,
+    model      TEXT    NOT NULL,
+    tokens_in  INTEGER NOT NULL,
+    tokens_out INTEGER NOT NULL,
+    created_at TEXT    NOT NULL DEFAULT (datetime('now'))
+  );
+`);
+
 // Add project_members table if it doesn't exist yet
 db.exec(`
   CREATE TABLE IF NOT EXISTS project_members (

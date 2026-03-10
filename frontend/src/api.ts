@@ -3,6 +3,7 @@ import type {
   BugFilters, CreateBugData, UpdateBugData, AddCommentData,
   CreateProjectData, UpdateProjectData,
   CreateUserData, UpdateUserData,
+  AiUsageLog, AiUsageSummary,
 } from './types';
 
 const BASE = '/api';
@@ -121,6 +122,19 @@ export function addComment(bugId: number, data: AddCommentData): Promise<Comment
     method: 'POST',
     body: JSON.stringify(data),
   });
+}
+
+// AI Assessment
+export function aiAssess(bugId: number): Promise<Bug> {
+  return request<Bug>(`/bugs/${bugId}/ai-assess`, { method: 'POST' });
+}
+
+export function getAiHistory(bugId: number): Promise<AiUsageLog[]> {
+  return request<AiUsageLog[]>(`/bugs/${bugId}/ai-assess/history`);
+}
+
+export function getAiUsage(): Promise<AiUsageSummary> {
+  return request<AiUsageSummary>('/ai-usage');
 }
 
 // Links

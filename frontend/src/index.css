@@ -1995,3 +1995,91 @@ h4 { margin: 0 0 0.5rem; font-size: var(--fs-base); font-weight: 600; }
   flex-shrink: 0;
 }
 
+/* ── AI Assessment Panel ─────────────────────────────────── */
+.ai-assessment-panel {
+  margin-top: 1.5rem;
+}
+
+.ai-assessment-panel h2,
+.ai-assessment-panel .risk-assessment-title {
+  color: #e2e8f0;
+}
+
+.ai-assessment-panel .risk-assessment-subtitle {
+  color: #64748b;
+}
+
+.ai-assessment-panel .error {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #f87171;
+}
+
+.ai-assessment-body {
+  padding: 1rem 0 0.5rem;
+}
+
+.ai-explanation {
+  color: #cbd5e1;
+  line-height: 1.6;
+  margin: 0 0 1.25rem;
+}
+
+.ai-suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ai-history {
+  margin-top: 1.5rem;
+  border-top: 1px solid #1e293b;
+  padding-top: 1rem;
+}
+
+.ai-history-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #475569;
+  margin: 0 0 0.75rem;
+}
+
+.ai-history-table {
+  font-size: 0.85rem;
+}
+
+/* ── AI Usage Page ───────────────────────────────────────── */
+.ai-usage-summary {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.ai-usage-stat {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 140px;
+}
+
+.ai-usage-stat-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+}
+
+.ai-usage-stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+

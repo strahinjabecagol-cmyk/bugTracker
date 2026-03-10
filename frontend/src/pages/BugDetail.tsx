@@ -11,6 +11,7 @@ import SearchBox from '../components/SearchBox';
 import type { SearchBoxItem } from '../components/SearchBox';
 import Tabs from '../components/Tabs';
 import RiskAssessmentPanel from '../components/RiskAssessmentPanel';
+import AiAssessmentPanel from '../components/AiAssessmentPanel';
 
 export default function BugDetail() {
   const { id } = useParams<{ id: string }>();
@@ -189,6 +190,12 @@ export default function BugDetail() {
       />
 
       {activeTab === 'risk' && <RiskAssessmentPanel bug={bug} />}
+      {activeTab === 'risk' && isAdmin && (
+        <AiAssessmentPanel
+          bug={bug}
+          onBugUpdated={(updated) => { setBug(updated); setEditData(updated); }}
+        />
+      )}
 
       {activeTab === 'details' && <div className="detail-card">
         <div className="detail-card-body">

@@ -45,6 +45,30 @@ export interface Bug {
   created_at: string;
   updated_at: string;
   images?: BugImage[];
+  // AI assessment fields
+  ai_explanation?: string | null;
+  ai_suggested_priority?: Bug['priority'] | null;
+  ai_suggested_severity?: Bug['severity'] | null;
+  ai_assessed_at?: string | null;
+  ai_tokens_in?: number | null;
+  ai_tokens_out?: number | null;
+}
+
+export interface AiUsageLog {
+  id: number;
+  bug_id: number;
+  bug_title?: string;
+  model: string;
+  tokens_in: number;
+  tokens_out: number;
+  created_at: string;
+}
+
+export interface AiUsageSummary {
+  total_tokens_in: number;
+  total_tokens_out: number;
+  total_calls: number;
+  log: AiUsageLog[];
 }
 
 export interface LinkedItem {

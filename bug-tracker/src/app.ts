@@ -9,8 +9,9 @@ import bugsRouter     from './routes/bugs';
 import commentsRouter, { deleteComment } from './routes/comments';
 import linksRouter from './routes/links';
 import projectMembersRouter from './routes/projectMembers';
+import aiAssessRouter from './routes/aiAssess';
 import authRouter from './routes/auth';
-import { requireAuth } from './middleware/auth';
+import { requireAuth, requireAdmin } from './middleware/auth';
 import { broadcast } from './ws';
 import { startPoller, syncCommits } from './gitlab/poller';
 import { syncLocalCommitsForBug } from './git/localSync';
@@ -44,6 +45,9 @@ app.use('/bugs/:id/comments', commentsRouter);
 // Nested: GET/POST/DELETE /bugs/:id/links
 app.use('/bugs/:id/links', linksRouter);
 
+// Nested: POST /bugs/:id/ai-assess  GET /bugs/:id/ai-assess/history
+app.use('/bugs/:id/ai-assess', aiAssessRouter);
+
 // Nested: GET /projects/:id/bugs
 app.use('/projects/:id/bugs', bugsRouter);
 
@@ -56,6 +60,25 @@ app.get('/bugs/:id/commits', (req, res) => {
   syncLocalCommitsForBug(bugId);
   const commits = db.prepare('SELECT * FROM bug_commits WHERE bug_id = ? ORDER BY committed_at DESC').all(bugId);
   res.json(commits);
+});
+
+// GET /ai-usage — admin-only global token usage summary
+app.get('/ai-usage', requireAdmin, (_req, res) => {
+  const totals = db.prepare(`
+    SELECT COALESCE(SUM(tokens_in), 0) AS total_tokens_in,
+           COALESCE(SUM(tokens_out), 0) AS total_tokens_out,
+           COUNT(*) AS total_calls
+    FROM ai_usage_log
+  `).get() as { total_tokens_in: number; total_tokens_out: number; total_calls: number };
+
+  const log = db.prepare(`
+    SELECT l.*, b.title AS bug_title
+    FROM ai_usage_log l
+    JOIN bugs b ON b.id = l.bug_id
+    ORDER BY l.created_at DESC
+  `).all();
+
+  res.json({ ...totals, log });
 });
 
 // POST /gitlab/sync — manual sync trigger
