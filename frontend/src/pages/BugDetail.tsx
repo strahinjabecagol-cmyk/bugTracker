@@ -190,9 +190,10 @@ export default function BugDetail() {
       />
 
       {activeTab === 'risk' && <RiskAssessmentPanel bug={bug} />}
-      {activeTab === 'risk' && isAdmin && (
+      {activeTab === 'risk' && (
         <AiAssessmentPanel
           bug={bug}
+          readOnly={!isAdmin}
           onBugUpdated={(updated) => { setBug(updated); setEditData(updated); }}
         />
       )}

@@ -6,10 +6,11 @@ import Button from './Button';
 
 interface AiAssessmentPanelProps {
   bug: Bug;
+  readOnly?: boolean;
   onBugUpdated: (updated: Bug) => void;
 }
 
-export default function AiAssessmentPanel({ bug, onBugUpdated }: AiAssessmentPanelProps) {
+export default function AiAssessmentPanel({ bug, readOnly = false, onBugUpdated }: AiAssessmentPanelProps) {
   const [current, setCurrent] = useState<Bug>(bug);
   const [history, setHistory] = useState<AiUsageLog[]>([]);
   const [loading, setLoading] = useState(false);
@@ -80,7 +81,7 @@ export default function AiAssessmentPanel({ bug, onBugUpdated }: AiAssessmentPan
       <div className="risk-assessment-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <h2 className="risk-assessment-title">AI Assessment</h2>
-          {hasAssessment && (
+          {hasAssessment && !readOnly && (
             <Button variant="ghost" style={{ width: 'fit-content' }} onClick={handleAssess} disabled={loading}>
               {loading ? 'Assessing…' : '↻ Re-assess'}
             </Button>
@@ -98,12 +99,15 @@ export default function AiAssessmentPanel({ bug, onBugUpdated }: AiAssessmentPan
         )}
       </div>
 
-      {!hasAssessment && (
+      {!hasAssessment && !readOnly && (
         <div style={{ padding: '1.5rem 0' }}>
           <Button variant="primary" onClick={handleAssess} disabled={loading}>
             {loading ? 'Running AI Assessment…' : 'Run AI Assessment'}
           </Button>
         </div>
+      )}
+      {!hasAssessment && readOnly && (
+        <p style={{ color: '#64748b', padding: '1.5rem 0', fontSize: '0.875rem' }}>No assessment yet.</p>
       )}
 
       {showSuggestion && (
@@ -119,7 +123,7 @@ export default function AiAssessmentPanel({ bug, onBugUpdated }: AiAssessmentPan
               <Badge value={current.ai_suggested_severity!} type="severity" />
             </div>
           </div>
-          {showActions && (
+          {showActions && !readOnly && (
             <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
               <Button variant="primary" onClick={handleApply} disabled={applying}>
                 {applying ? 'Applying…' : 'Apply Suggestions'}
