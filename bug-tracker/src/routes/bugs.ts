@@ -45,21 +45,27 @@ router.get('/', (req: Request, res) => {
   const conditions: string[] = [];
   const values: unknown[] = [];
 
-  if (effectiveProjectId) { conditions.push('project_id = ?');  values.push(effectiveProjectId); }
-  if (status)              { conditions.push('status = ?');      values.push(status); }
-  if (priority)            { conditions.push('priority = ?');    values.push(priority); }
-  if (severity)            { conditions.push('severity = ?');    values.push(severity); }
-  if (assignee_id)         { conditions.push('assignee_id = ?'); values.push(assignee_id); }
-  if (type)                { conditions.push('type = ?');        values.push(type); }
+  if (effectiveProjectId) { conditions.push('b.project_id = ?');  values.push(effectiveProjectId); }
+  if (status)              { conditions.push('b.status = ?');      values.push(status); }
+  if (priority)            { conditions.push('b.priority = ?');    values.push(priority); }
+  if (severity)            { conditions.push('b.severity = ?');    values.push(severity); }
+  if (assignee_id)         { conditions.push('b.assignee_id = ?'); values.push(assignee_id); }
+  if (type)                { conditions.push('b.type = ?');        values.push(type); }
 
   // Non-admins can only see bugs in projects they are members of
   if (req.user?.role !== 'admin') {
-    conditions.push('project_id IN (SELECT project_id FROM project_members WHERE user_id = ?)');
+    conditions.push('b.project_id IN (SELECT project_id FROM project_members WHERE user_id = ?)');
     values.push(req.user!.id);
   }
 
   const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
-  const bugs = db.prepare(`SELECT * FROM bugs ${where} ORDER BY id`).all(...values);
+  const bugs = db.prepare(`
+    SELECT b.*,
+      (SELECT COUNT(*) FROM item_links WHERE bug_id = b.id OR linked_bug_id = b.id) AS link_count,
+      (SELECT COUNT(*) FROM comments WHERE bug_id = b.id) AS comment_count,
+      (SELECT name FROM users WHERE id = b.assignee_id) AS assignee_name
+    FROM bugs b ${where} ORDER BY b.id
+  `).all(...values);
   const result = (bugs as Record<string, unknown>[]).map((b) => ({
     ...b,
     images: getImages(b.id as number),

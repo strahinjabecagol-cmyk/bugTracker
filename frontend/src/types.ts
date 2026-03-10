@@ -45,6 +45,10 @@ export interface Bug {
   created_at: string;
   updated_at: string;
   images?: BugImage[];
+  // Aggregated counts (from GET /bugs list)
+  link_count?: number;
+  comment_count?: number;
+  assignee_name?: string | null;
   // AI assessment fields
   ai_explanation?: string | null;
   ai_suggested_priority?: Bug['priority'] | null;

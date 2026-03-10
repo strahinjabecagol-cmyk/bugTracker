@@ -8,7 +8,7 @@ import { useProject } from '../context/ProjectContext';
 import { useMultiFilter } from '../hooks/useMultiFilter';
 import MultiDropdown from '../components/MultiDropdown';
 
-type SortCol = 'id' | 'title' | 'project' | 'type' | 'status' | 'priority' | 'severity';
+type SortCol = 'id' | 'title' | 'project' | 'type' | 'status' | 'priority' | 'severity' | 'assignee';
 type SortDir = 'asc' | 'desc';
 type Priority = Bug['priority'];
 type Severity = Bug['severity'];
@@ -112,6 +112,7 @@ export default function BugList() {
         case 'status':   cmp = STATUS_ORDER[a.status] - STATUS_ORDER[b.status]; break;
         case 'priority': cmp = PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]; break;
         case 'severity': cmp = SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]; break;
+        case 'assignee': cmp = (a.assignee_name ?? '').localeCompare(b.assignee_name ?? ''); break;
       }
       return sortDir === 'asc' ? cmp : -cmp;
     });
@@ -181,20 +182,28 @@ export default function BugList() {
               <Th col="status">Status</Th>
               <Th col="priority">Priority</Th>
               <Th col="severity">Severity</Th>
+              <Th col="assignee">Assignee</Th>
             </tr>
           </thead>
           <tbody>
             {sorted.length === 0 ? (
-              <tr><td colSpan={7} style={{ textAlign: 'center', color: '#888' }}>No bugs found</td></tr>
+              <tr><td colSpan={8} style={{ textAlign: 'center', color: '#888' }}>No bugs found</td></tr>
             ) : sorted.map((bug) => (
               <tr key={bug.id}>
                 <td>#{bug.id}</td>
-                <td><Link to={`/bugs/${bug.id}`}>{bug.title}</Link></td>
+                <td>
+                  <Link to={`/bugs/${bug.id}`}>{bug.title}</Link>
+                  <span className="item-meta-counts">
+                    {!!bug.link_count && <span className="item-meta-count"><span>🔗 {bug.link_count}</span></span>}
+                    {!!bug.comment_count && <span className="item-meta-count"><span>💬 {bug.comment_count}</span></span>}
+                  </span>
+                </td>
                 <td><span className="project-pill"><span>{projectName(bug.project_id)}</span></span></td>
                 <td><Badge value={bug.type} type="type" /></td>
                 <td><Badge value={bug.status} type="status" /></td>
                 <td><Badge value={bug.priority} type="priority" /></td>
                 <td><Badge value={bug.severity} type="severity" /></td>
+                <td className="assignee-cell">{bug.assignee_name ?? <span className="unassigned">—</span>}</td>
               </tr>
             ))}
           </tbody>

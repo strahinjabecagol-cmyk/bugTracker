@@ -236,6 +236,13 @@ export default function BoardView() {
                             <Badge value={bug.priority} type="priority" />
                             <Badge value={bug.severity} type="severity" />
                           </div>
+                          <div className="board-card-footer">
+                            <span className="board-card-assignee">{bug.assignee_name ?? <span className="unassigned">Unassigned</span>}</span>
+                            <span className="board-card-counts">
+                              {!!bug.link_count && <span className="item-meta-count"><span>🔗 {bug.link_count}</span></span>}
+                              {!!bug.comment_count && <span className="item-meta-count"><span>💬 {bug.comment_count}</span></span>}
+                            </span>
+                          </div>
                         </div>
                       );
                     })
@@ -265,6 +272,9 @@ export default function BoardView() {
           <div className="board-card-badges">
             <Badge value={dragRef.current.bug.priority} type="priority" />
             <Badge value={dragRef.current.bug.severity} type="severity" />
+          </div>
+          <div className="board-card-footer">
+            <span className="board-card-assignee">{dragRef.current.bug.assignee_name ?? <span className="unassigned">Unassigned</span>}</span>
           </div>
         </div>
       )}
