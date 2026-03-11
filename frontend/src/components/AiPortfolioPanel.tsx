@@ -45,9 +45,14 @@ export default function AiPortfolioPanel({ readOnly = false }: AiPortfolioPanelP
     setError('');
     try {
       await applyPortfolioAssess();
-      // Refresh results to update current_priority/severity indicators
-      const refreshed = await getLatestPortfolioAssess();
-      setData(refreshed);
+      setData((prev) => prev ? {
+        ...prev,
+        results: prev.results.map((r) => ({
+          ...r,
+          current_priority: r.suggested_priority,
+          current_severity: r.suggested_severity,
+        })),
+      } : prev);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Apply failed');
     } finally {
@@ -158,7 +163,7 @@ export default function AiPortfolioPanel({ readOnly = false }: AiPortfolioPanelP
                     {!readOnly && (
                       <td>
                         {applied ? (
-                          <span style={{ color: '#4ade80', fontSize: '0.8rem' }}>✓ Applied</span>
+                          <span style={{ color: '#4ade80', fontSize: '0.8rem' }}>✓ Changes applied</span>
                         ) : (
                           <Button
                             variant="ghost"
