@@ -68,11 +68,24 @@ export interface AiUsageLog {
   created_at: string;
 }
 
+export interface AiPortfolioLogEntry {
+  id: number;
+  run_at: string;
+  model: string;
+  tokens_in: number;
+  tokens_out: number;
+  item_count: number;
+}
+
 export interface AiUsageSummary {
   total_tokens_in: number;
   total_tokens_out: number;
   total_calls: number;
   log: AiUsageLog[];
+  portfolio_total_tokens_in: number;
+  portfolio_total_tokens_out: number;
+  portfolio_total_runs: number;
+  portfolio_log: AiPortfolioLogEntry[];
 }
 
 export interface LinkedItem {

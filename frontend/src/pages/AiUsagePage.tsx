@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAiUsage } from '../api';
-import type { AiUsageSummary, AiUsageLog } from '../types';
+import type { AiUsageSummary, AiUsageLog, AiPortfolioLogEntry } from '../types';
 
 type SortCol = 'created_at' | 'bug_id' | 'model' | 'tokens_in' | 'tokens_out' | 'total';
 type SortDir = 'asc' | 'desc';
@@ -129,6 +129,56 @@ export default function AiUsagePage() {
                     {row.bug_title}
                   </td>
                   <td style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: '#94a3b8' }}>{row.model}</td>
+                  <td>{row.tokens_in}</td>
+                  <td>{row.tokens_out}</td>
+                  <td style={{ fontWeight: 600 }}>{row.tokens_in + row.tokens_out}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <h2 style={{ marginTop: '2.5rem', marginBottom: '0.75rem', fontSize: '1.1rem', color: '#e2e8f0', fontWeight: 600 }}>
+            Portfolio Assessments
+          </h2>
+
+          <div className="ai-usage-summary">
+            <div className="ai-usage-stat">
+              <span className="ai-usage-stat-label">Total Runs</span>
+              <span className="ai-usage-stat-value">{data.portfolio_total_runs}</span>
+            </div>
+            <div className="ai-usage-stat">
+              <span className="ai-usage-stat-label">Tokens In</span>
+              <span className="ai-usage-stat-value">{data.portfolio_total_tokens_in.toLocaleString()}</span>
+            </div>
+            <div className="ai-usage-stat">
+              <span className="ai-usage-stat-label">Tokens Out</span>
+              <span className="ai-usage-stat-value">{data.portfolio_total_tokens_out.toLocaleString()}</span>
+            </div>
+            <div className="ai-usage-stat">
+              <span className="ai-usage-stat-label">Total Tokens</span>
+              <span className="ai-usage-stat-value">{(data.portfolio_total_tokens_in + data.portfolio_total_tokens_out).toLocaleString()}</span>
+            </div>
+          </div>
+
+          <table className="table" style={{ marginTop: '1rem' }}>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Model</th>
+                <th>Items Assessed</th>
+                <th>Tokens In</th>
+                <th>Tokens Out</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.portfolio_log.length === 0 ? (
+                <tr><td colSpan={6} style={{ textAlign: 'center', color: '#64748b' }}>No portfolio runs yet</td></tr>
+              ) : data.portfolio_log.map((row: AiPortfolioLogEntry) => (
+                <tr key={row.id}>
+                  <td>{new Date(row.run_at).toLocaleString()}</td>
+                  <td style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: '#94a3b8' }}>{row.model}</td>
+                  <td>{row.item_count}</td>
                   <td>{row.tokens_in}</td>
                   <td>{row.tokens_out}</td>
                   <td style={{ fontWeight: 600 }}>{row.tokens_in + row.tokens_out}</td>

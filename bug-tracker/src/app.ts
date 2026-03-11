@@ -82,7 +82,25 @@ app.get('/ai-usage', requireAdmin, (_req, res) => {
     ORDER BY l.created_at DESC
   `).all();
 
-  res.json({ ...totals, log });
+  const portfolioTotals = db.prepare(`
+    SELECT COALESCE(SUM(tokens_in), 0) AS portfolio_total_tokens_in,
+           COALESCE(SUM(tokens_out), 0) AS portfolio_total_tokens_out,
+           COUNT(*) AS portfolio_total_runs
+    FROM ai_portfolio_log
+  `).get() as { portfolio_total_tokens_in: number; portfolio_total_tokens_out: number; portfolio_total_runs: number };
+
+  const portfolioLog = db.prepare(`
+    SELECT * FROM ai_portfolio_log ORDER BY run_at DESC
+  `).all();
+
+  res.json({
+    total_tokens_in: totals.total_tokens_in + portfolioTotals.portfolio_total_tokens_in,
+    total_tokens_out: totals.total_tokens_out + portfolioTotals.portfolio_total_tokens_out,
+    total_calls: totals.total_calls,
+    log,
+    ...portfolioTotals,
+    portfolio_log: portfolioLog,
+  });
 });
 
 // POST /gitlab/sync — manual sync trigger
