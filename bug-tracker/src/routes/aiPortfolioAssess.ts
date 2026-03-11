@@ -126,7 +126,8 @@ router.get('/latest', (_req, res) => {
   }
 
   const results = db.prepare(`
-    SELECT apr.*, b.title AS bug_title, b.status AS bug_status
+    SELECT apr.*, b.title AS bug_title, b.status AS bug_status,
+           b.priority AS current_priority, b.severity AS current_severity
     FROM ai_portfolio_results apr
     JOIN bugs b ON b.id = apr.bug_id
     WHERE apr.run_id = ?
