@@ -119,6 +119,8 @@ export interface AiPortfolioResult {
   rank: number;
   suggested_priority: Bug['priority'];
   suggested_severity: Bug['severity'];
+  current_priority: Bug['priority'];
+  current_severity: Bug['severity'];
   rationale: string;
 }
 

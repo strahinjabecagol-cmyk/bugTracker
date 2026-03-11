@@ -2,6 +2,7 @@ import { Router } from 'express';
 import Anthropic from '@anthropic-ai/sdk';
 import db from '../db/database';
 import { requireAdmin } from '../middleware/auth';
+import { broadcast } from '../ws';
 
 const router = Router();
 const MODEL = 'claude-haiku-4-5-20251001';
@@ -97,7 +98,8 @@ Respond with a JSON array only — no markdown fences, no extra text:
     // Return run + joined results
     const run = db.prepare('SELECT * FROM ai_portfolio_log WHERE id = ?').get(runId);
     const results = db.prepare(`
-      SELECT apr.*, b.title AS bug_title, b.status AS bug_status
+      SELECT apr.*, b.title AS bug_title, b.status AS bug_status,
+             b.priority AS current_priority, b.severity AS current_severity
       FROM ai_portfolio_results apr
       JOIN bugs b ON b.id = apr.bug_id
       WHERE apr.run_id = ?
@@ -132,6 +134,44 @@ router.get('/latest', (_req, res) => {
   `).all(run.id);
 
   res.json({ run, results });
+});
+
+// POST /ai-portfolio-assess/apply — admin only
+// Body: { bug_ids?: number[] } — omit to apply all from latest run
+router.post('/apply', requireAdmin, (req, res) => {
+  const run = db.prepare(`
+    SELECT * FROM ai_portfolio_log ORDER BY run_at DESC LIMIT 1
+  `).get() as { id: number } | undefined;
+
+  if (!run) {
+    res.status(404).json({ error: 'No portfolio assessment run found.' });
+    return;
+  }
+
+  const results = db.prepare(`
+    SELECT apr.bug_id, apr.suggested_priority, apr.suggested_severity
+    FROM ai_portfolio_results apr
+    WHERE apr.run_id = ?
+  `).all(run.id) as { bug_id: number; suggested_priority: string; suggested_severity: string }[];
+
+  const bugIds: number[] | undefined = req.body?.bug_ids;
+  const toApply = bugIds && bugIds.length > 0
+    ? results.filter((r) => bugIds.includes(r.bug_id))
+    : results;
+
+  const updateStmt = db.prepare(`
+    UPDATE bugs SET priority = ?, severity = ?, updated_at = datetime('now') WHERE id = ?
+  `);
+
+  const updatedIds: number[] = [];
+  for (const r of toApply) {
+    updateStmt.run(r.suggested_priority, r.suggested_severity, r.bug_id);
+    updatedIds.push(r.bug_id);
+    const updated = db.prepare('SELECT * FROM bugs WHERE id = ?').get(r.bug_id);
+    if (updated) broadcast({ type: 'bug_updated', bug: updated });
+  }
+
+  res.json({ applied: updatedIds });
 });
 
 export default router;

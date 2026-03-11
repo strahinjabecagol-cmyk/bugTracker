@@ -147,6 +147,13 @@ export function getLatestPortfolioAssess(): Promise<AiPortfolioAssessment> {
   return request<AiPortfolioAssessment>('/ai-portfolio-assess/latest');
 }
 
+export function applyPortfolioAssess(bugIds?: number[]): Promise<{ applied: number[] }> {
+  return request<{ applied: number[] }>('/ai-portfolio-assess/apply', {
+    method: 'POST',
+    body: bugIds ? JSON.stringify({ bug_ids: bugIds }) : JSON.stringify({}),
+  });
+}
+
 // Links
 export function getLinks(bugId: number): Promise<LinkedItem[]> {
   return request<LinkedItem[]>(`/bugs/${bugId}/links`);

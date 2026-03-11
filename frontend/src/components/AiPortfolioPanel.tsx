@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import type { AiPortfolioAssessment } from '../types';
-import { getLatestPortfolioAssess, runPortfolioAssess } from '../api';
+import type { AiPortfolioAssessment, AiPortfolioResult } from '../types';
+import { getLatestPortfolioAssess, runPortfolioAssess, applyPortfolioAssess, updateBug } from '../api';
 import Badge from './Badge';
 import Button from './Button';
 
@@ -9,10 +9,15 @@ interface AiPortfolioPanelProps {
   readOnly?: boolean;
 }
 
+function isApplied(r: AiPortfolioResult): boolean {
+  return r.suggested_priority === r.current_priority && r.suggested_severity === r.current_severity;
+}
+
 export default function AiPortfolioPanel({ readOnly = false }: AiPortfolioPanelProps) {
   const [data, setData] = useState<AiPortfolioAssessment | null>(null);
   const [loading, setLoading] = useState(true);
   const [running, setRunning] = useState(false);
+  const [applying, setApplying] = useState<'all' | number | null>(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -35,17 +40,64 @@ export default function AiPortfolioPanel({ readOnly = false }: AiPortfolioPanelP
     }
   }
 
+  async function handleApplyAll() {
+    setApplying('all');
+    setError('');
+    try {
+      await applyPortfolioAssess();
+      // Refresh results to update current_priority/severity indicators
+      const refreshed = await getLatestPortfolioAssess();
+      setData(refreshed);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Apply failed');
+    } finally {
+      setApplying(null);
+    }
+  }
+
+  async function handleApplyOne(r: AiPortfolioResult) {
+    setApplying(r.bug_id);
+    setError('');
+    try {
+      await updateBug(r.bug_id, {
+        priority: r.suggested_priority,
+        severity: r.suggested_severity,
+      });
+      // Update local state to reflect applied row
+      setData((prev) => prev ? {
+        ...prev,
+        results: prev.results.map((res) =>
+          res.bug_id === r.bug_id
+            ? { ...res, current_priority: r.suggested_priority, current_severity: r.suggested_severity }
+            : res
+        ),
+      } : prev);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Apply failed');
+    } finally {
+      setApplying(null);
+    }
+  }
+
   const hasResults = !!data?.run && data.results.length > 0;
+  const anyUnapplied = hasResults && data!.results.some((r) => !isApplied(r));
 
   return (
     <div className="detail-card ai-assessment-panel ai-portfolio-panel">
       <div className="risk-assessment-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
           <h2 className="risk-assessment-title">AI Portfolio Assessment</h2>
           {hasResults && !readOnly && (
-            <Button variant="ghost" style={{ width: 'fit-content' }} onClick={handleRun} disabled={running}>
-              {running ? 'Running…' : '↻ Re-run'}
-            </Button>
+            <>
+              <Button variant="ghost" style={{ width: 'fit-content' }} onClick={handleRun} disabled={running || applying !== null}>
+                {running ? 'Running…' : '↻ Re-run'}
+              </Button>
+              {anyUnapplied && (
+                <Button variant="primary" style={{ width: 'fit-content' }} onClick={handleApplyAll} disabled={applying !== null}>
+                  {applying === 'all' ? 'Applying…' : '✓ Apply All'}
+                </Button>
+              )}
+            </>
           )}
         </div>
         {data?.run && (
@@ -82,26 +134,46 @@ export default function AiPortfolioPanel({ readOnly = false }: AiPortfolioPanelP
                 <th>Rank</th>
                 <th>Item</th>
                 <th>Status</th>
-                <th>Priority</th>
-                <th>Severity</th>
+                <th>Suggested Priority</th>
+                <th>Suggested Severity</th>
                 <th>Rationale</th>
+                {!readOnly && <th></th>}
               </tr>
             </thead>
             <tbody>
-              {data!.results.map((r) => (
-                <tr key={r.id}>
-                  <td style={{ fontWeight: 700, color: '#e2e8f0' }}>#{r.rank}</td>
-                  <td>
-                    <Link to={`/bugs/${r.bug_id}`} style={{ color: '#818cf8' }}>
-                      #{r.bug_id} {r.bug_title}
-                    </Link>
-                  </td>
-                  <td><Badge value={r.bug_status} type="status" /></td>
-                  <td><Badge value={r.suggested_priority} type="priority" /></td>
-                  <td><Badge value={r.suggested_severity} type="severity" /></td>
-                  <td style={{ color: '#94a3b8', fontSize: '0.85rem' }}>{r.rationale}</td>
-                </tr>
-              ))}
+              {data!.results.map((r) => {
+                const applied = isApplied(r);
+                return (
+                  <tr key={r.id}>
+                    <td style={{ fontWeight: 700, color: '#e2e8f0' }}>#{r.rank}</td>
+                    <td>
+                      <Link to={`/bugs/${r.bug_id}`} style={{ color: '#818cf8' }}>
+                        #{r.bug_id} {r.bug_title}
+                      </Link>
+                    </td>
+                    <td><Badge value={r.bug_status} type="status" /></td>
+                    <td><Badge value={r.suggested_priority} type="priority" /></td>
+                    <td><Badge value={r.suggested_severity} type="severity" /></td>
+                    <td style={{ color: '#94a3b8', fontSize: '0.85rem' }}>{r.rationale}</td>
+                    {!readOnly && (
+                      <td>
+                        {applied ? (
+                          <span style={{ color: '#4ade80', fontSize: '0.8rem' }}>✓ Applied</span>
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            style={{ width: 'fit-content', fontSize: '0.8rem', padding: '0.25rem 0.6rem' }}
+                            onClick={() => handleApplyOne(r)}
+                            disabled={applying !== null}
+                          >
+                            {applying === r.bug_id ? '…' : 'Apply'}
+                          </Button>
+                        )}
+                      </td>
+                    )}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
