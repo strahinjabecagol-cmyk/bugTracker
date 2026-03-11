@@ -192,18 +192,22 @@ export default function BugDetail() {
 
       {activeTab === 'risk' && <RiskAssessmentPanel bug={bug} />}
       {activeTab === 'risk' && (
-        <AiAssessmentPanel
-          bug={bug}
-          readOnly={!isAdmin}
-          onBugUpdated={(updated) => { setBug(updated); setEditData(updated); }}
-        />
-      )}
-      {activeTab === 'risk' && (
-        <BugPortfolioPanel
-          bug={bug}
-          readOnly={!isAdmin}
-          onBugUpdated={(updated) => { setBug(updated); setEditData(updated); }}
-        />
+        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <AiAssessmentPanel
+              bug={bug}
+              readOnly={!isAdmin}
+              onBugUpdated={(updated) => { setBug(updated); setEditData(updated); }}
+            />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <BugPortfolioPanel
+              bug={bug}
+              readOnly={!isAdmin}
+              onBugUpdated={(updated) => { setBug(updated); setEditData(updated); }}
+            />
+          </div>
+        </div>
       )}
 
       {activeTab === 'details' && <div className="detail-card">

@@ -57,7 +57,7 @@ export default function BugPortfolioPanel({ bug, readOnly = false, onBugUpdated 
   return (
     <div className="detail-card ai-assessment-panel">
       <div className="risk-assessment-header">
-        <h2 className="risk-assessment-title">Portfolio Assessment</h2>
+        <h2 className="risk-assessment-title">Portfolio AI Assessment</h2>
         <p className="risk-assessment-subtitle">
           Rank <strong style={{ color: '#e2e8f0' }}>#{data.rank}</strong> of {data.item_count} &nbsp;·&nbsp; {new Date(data.run_at).toLocaleString()}
           <span style={{ marginLeft: '0.75rem', color: '#64748b', fontFamily: 'monospace', fontSize: '0.8rem' }}>{data.model}</span>
