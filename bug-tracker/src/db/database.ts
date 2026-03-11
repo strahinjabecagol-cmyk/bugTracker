@@ -124,6 +124,31 @@ db.exec(`
   );
 `);
 
+// AI portfolio assessment log — one row per full portfolio run
+db.exec(`
+  CREATE TABLE IF NOT EXISTS ai_portfolio_log (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    run_at     TEXT    NOT NULL DEFAULT (datetime('now')),
+    model      TEXT    NOT NULL,
+    tokens_in  INTEGER NOT NULL,
+    tokens_out INTEGER NOT NULL,
+    item_count INTEGER NOT NULL
+  );
+`);
+
+// AI portfolio results — one row per item per run
+db.exec(`
+  CREATE TABLE IF NOT EXISTS ai_portfolio_results (
+    id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+    run_id             INTEGER NOT NULL REFERENCES ai_portfolio_log(id) ON DELETE CASCADE,
+    bug_id             INTEGER NOT NULL REFERENCES bugs(id) ON DELETE CASCADE,
+    rank               INTEGER NOT NULL,
+    suggested_priority TEXT    NOT NULL,
+    suggested_severity TEXT    NOT NULL,
+    rationale          TEXT    NOT NULL
+  );
+`);
+
 // Add project_members table if it doesn't exist yet
 db.exec(`
   CREATE TABLE IF NOT EXISTS project_members (
