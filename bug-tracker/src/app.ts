@@ -10,6 +10,7 @@ import commentsRouter, { deleteComment } from './routes/comments';
 import linksRouter from './routes/links';
 import projectMembersRouter from './routes/projectMembers';
 import aiAssessRouter from './routes/aiAssess';
+import aiPortfolioAssessRouter from './routes/aiPortfolioAssess';
 import authRouter from './routes/auth';
 import { requireAuth, requireAdmin } from './middleware/auth';
 import { broadcast } from './ws';
@@ -47,6 +48,9 @@ app.use('/bugs/:id/links', linksRouter);
 
 // Nested: POST /bugs/:id/ai-assess  GET /bugs/:id/ai-assess/history
 app.use('/bugs/:id/ai-assess', aiAssessRouter);
+
+// Portfolio AI assessment
+app.use('/ai-portfolio-assess', aiPortfolioAssessRouter);
 
 // Nested: GET /projects/:id/bugs
 app.use('/projects/:id/bugs', bugsRouter);
