@@ -23,3 +23,6 @@ yarn-debug.log*
 SESSION-*.md
 SESSION.md
 .mcp.json.backup
+
+# Playwright MCP artifacts
+.playwright-mcp/
