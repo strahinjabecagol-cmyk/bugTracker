@@ -2161,3 +2161,30 @@ h4 { margin: 0 0 0.5rem; font-size: var(--fs-base); font-weight: 600; }
 .ai-usage-page .table tbody tr:hover { background: #1e293b; }
 .ai-usage-page .table tbody tr:last-child td { border-bottom: none; }
 
+/* ── AI Portfolio Panel ──────────────────────────────────── */
+.ai-portfolio-panel {
+  margin-top: 2rem;
+}
+
+.ai-portfolio-panel .table {
+  background: #0f172a;
+  border-radius: 0;
+  border-color: #1e293b;
+}
+
+.ai-portfolio-panel .table th {
+  background: #1e293b;
+  color: #64748b;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ai-portfolio-panel .table td {
+  color: #cbd5e1;
+  border-bottom-color: #1e293b;
+}
+
+.ai-portfolio-panel .table tbody tr:hover { background: #1e293b; }
+.ai-portfolio-panel .table tbody tr:last-child td { border-bottom: none; }
+

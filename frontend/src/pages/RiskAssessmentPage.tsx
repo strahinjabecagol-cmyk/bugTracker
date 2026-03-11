@@ -2,9 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Bug } from '../types';
 import { useProject } from '../context/ProjectContext';
+import { useAuth } from '../context/AuthContext';
 import Badge from '../components/Badge';
 import RiskMatrix from '../components/RiskMatrix';
 import MultiDropdown from '../components/MultiDropdown';
+import AiPortfolioPanel from '../components/AiPortfolioPanel';
 import { useMultiFilter } from '../hooks/useMultiFilter';
 import { useProjectBugs } from '../hooks/useProjectBugs';
 import { PRIORITY_SCORE, SEVERITY_SCORE, quadrantLabel } from '../utils/risk';
@@ -18,6 +20,8 @@ const STATUS_ORDER   = { open: 0, in_progress: 1, resolved: 2, closed: 3 };
 
 export default function RiskAssessmentPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const { selectedProjectId } = useProject();
   const { bugs, loading } = useProjectBugs(selectedProjectId);
   const [hoveredId, setHoveredId] = useState<number | null>(null);
@@ -139,6 +143,8 @@ export default function RiskAssessmentPage() {
               </table>
             </div>
           </div>
+
+          <AiPortfolioPanel readOnly={!isAdmin} />
         </>
       )}
     </div>
