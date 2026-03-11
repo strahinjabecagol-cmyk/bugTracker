@@ -5,6 +5,7 @@ import type {
   CreateUserData, UpdateUserData,
   AiUsageLog, AiUsageSummary,
   AiPortfolioAssessment,
+  BugPortfolioAssessment,
 } from './types';
 
 const BASE = '/api';
@@ -168,4 +169,9 @@ export function addLink(bugId: number, linkedBugId: number): Promise<LinkedItem[
 
 export function removeLink(bugId: number, linkedBugId: number): Promise<void> {
   return request<void>(`/bugs/${bugId}/links/${linkedBugId}`, { method: 'DELETE' });
+}
+
+// Bug Portfolio Assessment
+export function getBugPortfolioAssessment(bugId: number): Promise<BugPortfolioAssessment | null> {
+  return request<BugPortfolioAssessment | null>(`/bugs/${bugId}/portfolio-assessment`);
 }

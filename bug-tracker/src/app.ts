@@ -58,6 +58,22 @@ app.use('/projects/:id/bugs', bugsRouter);
 // Nested: GET/POST/DELETE /projects/:id/members
 app.use('/projects/:id/members', projectMembersRouter);
 
+// GET /bugs/:id/portfolio-assessment — latest portfolio assessment result for a specific bug
+app.get('/bugs/:id/portfolio-assessment', (req, res) => {
+  const bugId = Number(req.params.id);
+  const result = db.prepare(`
+    SELECT apr.*, apl.run_at, apl.model, apl.item_count,
+           b.priority AS current_priority, b.severity AS current_severity
+    FROM ai_portfolio_results apr
+    JOIN ai_portfolio_log apl ON apl.id = apr.run_id
+    JOIN bugs b ON b.id = apr.bug_id
+    WHERE apr.bug_id = ?
+    ORDER BY apl.run_at DESC
+    LIMIT 1
+  `).get(bugId);
+  res.json(result ?? null);
+});
+
 // GET /bugs/:id/commits — syncs local git branches first, then returns stored commits
 app.get('/bugs/:id/commits', (req, res) => {
   const bugId = Number(req.params.id);

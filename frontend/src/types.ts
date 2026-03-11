@@ -105,6 +105,21 @@ export interface ProjectMember {
   joined_at: string;
 }
 
+export interface BugPortfolioAssessment {
+  id: number;
+  run_id: number;
+  bug_id: number;
+  rank: number;
+  suggested_priority: Bug['priority'];
+  suggested_severity: Bug['severity'];
+  rationale: string;
+  run_at: string;
+  model: string;
+  item_count: number;
+  current_priority: Bug['priority'];
+  current_severity: Bug['severity'];
+}
+
 export interface Comment {
   id: number;
   bug_id: number;
