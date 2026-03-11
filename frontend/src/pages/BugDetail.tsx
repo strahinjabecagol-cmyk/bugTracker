@@ -31,6 +31,7 @@ export default function BugDetail() {
   const [editData, setEditData] = useState<Partial<Bug>>({});
   const [editImages, setEditImages] = useState<string[]>([]);
   const [confirmRemoveImage, setConfirmRemoveImage] = useState<number | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [saveError, setSaveError] = useState('');
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -234,7 +235,7 @@ export default function BugDetail() {
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
                   {editImages.map((src, i) => (
                     <div key={i} style={{ position: 'relative', width: 120, height: 75, flexShrink: 0 }}>
-                      <img src={src} alt="" style={{ width: 120, height: 75, objectFit: 'cover', borderRadius: 4, border: '1px solid #334155', display: 'block' }} />
+                      <img src={src} alt="" onClick={() => setPreviewImage(src)} style={{ width: 120, height: 75, objectFit: 'cover', borderRadius: 4, border: '1px solid #334155', display: 'block', cursor: 'zoom-in' }} />
                       <button
                         type="button"
                         onClick={() => setConfirmRemoveImage(i)}
@@ -441,6 +442,15 @@ export default function BugDetail() {
           onConfirm={handleDelete}
           onCancel={() => setConfirmDelete(false)}
         />
+      )}
+
+      {previewImage && (
+        <div
+          onClick={() => setPreviewImage(null)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'zoom-out' }}
+        >
+          <img src={previewImage} alt="" style={{ maxWidth: '90vw', maxHeight: '90vh', borderRadius: 8, boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }} />
+        </div>
       )}
     </div>
   );
