@@ -101,6 +101,32 @@ export interface Comment {
   created_at: string;
 }
 
+export interface AiPortfolioRun {
+  id: number;
+  run_at: string;
+  model: string;
+  tokens_in: number;
+  tokens_out: number;
+  item_count: number;
+}
+
+export interface AiPortfolioResult {
+  id: number;
+  run_id: number;
+  bug_id: number;
+  bug_title: string;
+  bug_status: string;
+  rank: number;
+  suggested_priority: Bug['priority'];
+  suggested_severity: Bug['severity'];
+  rationale: string;
+}
+
+export interface AiPortfolioAssessment {
+  run: AiPortfolioRun | null;
+  results: AiPortfolioResult[];
+}
+
 export interface BugFilters {
   status?: string;
   priority?: string;

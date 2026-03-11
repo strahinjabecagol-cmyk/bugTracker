@@ -4,6 +4,7 @@ import type {
   CreateProjectData, UpdateProjectData,
   CreateUserData, UpdateUserData,
   AiUsageLog, AiUsageSummary,
+  AiPortfolioAssessment,
 } from './types';
 
 const BASE = '/api';
@@ -135,6 +136,15 @@ export function getAiHistory(bugId: number): Promise<AiUsageLog[]> {
 
 export function getAiUsage(): Promise<AiUsageSummary> {
   return request<AiUsageSummary>('/ai-usage');
+}
+
+// AI Portfolio Assessment
+export function runPortfolioAssess(): Promise<AiPortfolioAssessment> {
+  return request<AiPortfolioAssessment>('/ai-portfolio-assess', { method: 'POST' });
+}
+
+export function getLatestPortfolioAssess(): Promise<AiPortfolioAssessment> {
+  return request<AiPortfolioAssessment>('/ai-portfolio-assess/latest');
 }
 
 // Links
