@@ -12,6 +12,7 @@ import projectMembersRouter from './routes/projectMembers';
 import aiAssessRouter from './routes/aiAssess';
 import aiPortfolioAssessRouter from './routes/aiPortfolioAssess';
 import integrationsRouter from './routes/integrations';
+import projectIntegrationRouter from './routes/projectIntegration';
 import authRouter from './routes/auth';
 import { requireAuth, requireAdmin } from './middleware/auth';
 import { broadcast } from './ws';
@@ -54,6 +55,9 @@ app.use('/ai-portfolio-assess', aiPortfolioAssessRouter);
 
 // Integration profiles
 app.use('/integrations', integrationsRouter);
+
+// Per-project integration binding
+app.use('/projects/:id/integration', projectIntegrationRouter);
 
 // Nested: GET /projects/:id/bugs
 app.use('/projects/:id/bugs', bugsRouter);
