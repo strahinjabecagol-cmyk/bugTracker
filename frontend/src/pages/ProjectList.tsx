@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getProjects, createProject, updateProject, deleteProject, getProjectMembers, addProjectMember, removeProjectMember, getUsers } from '../api';
-import type { Project, ProjectMember, User } from '../types';
+import { getProjects, createProject, updateProject, deleteProject, getProjectMembers, addProjectMember, removeProjectMember, getUsers, getIntegrations, getProjectIntegration, setProjectIntegration, removeProjectIntegration } from '../api';
+import type { Project, ProjectMember, User, IntegrationProfile, ProjectIntegration } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { useProject } from '../context/ProjectContext';
 import Button from '../components/Button';
 import ConfirmModal from '../components/ConfirmModal';
+import Badge from '../components/Badge';
+import SidebarDropdown from '../components/SidebarDropdown';
 
 type ModalMode = 'create' | 'edit';
 
@@ -39,6 +41,16 @@ export default function ProjectList() {
   const [membersLoading, setMembersLoading] = useState(false);
   const [membersError, setMembersError] = useState('');
   const [confirmRemoveMember, setConfirmRemoveMember] = useState<ProjectMember | null>(null);
+
+  // Integration modal state
+  const [integrationProject, setIntegrationProject]     = useState<Project | null>(null);
+  const [allProfiles, setAllProfiles]                   = useState<IntegrationProfile[]>([]);
+  const [currentBinding, setCurrentBinding]             = useState<ProjectIntegration | null>(null);
+  const [selectedProfileId, setSelectedProfileId]       = useState('');
+  const [integrationLoading, setIntegrationLoading]     = useState(false);
+  const [integrationError, setIntegrationError]         = useState('');
+  const [integrationSaving, setIntegrationSaving]       = useState(false);
+  const [confirmRemoveBinding, setConfirmRemoveBinding] = useState(false);
 
   useEffect(() => {
     document.body.style.background = '#0f172a';
@@ -147,6 +159,60 @@ export default function ProjectList() {
     }
   }
 
+  async function openIntegration(project: Project) {
+    setIntegrationProject(project);
+    setIntegrationError('');
+    setIntegrationLoading(true);
+    try {
+      const [profiles, binding] = await Promise.all([getIntegrations(), getProjectIntegration(project.id)]);
+      setAllProfiles(profiles);
+      setCurrentBinding(binding);
+      setSelectedProfileId(binding ? String(binding.profile_id) : '');
+    } catch (e) {
+      setIntegrationError(e instanceof Error ? e.message : 'Failed to load');
+    } finally {
+      setIntegrationLoading(false);
+    }
+  }
+
+  function closeIntegration() {
+    setIntegrationProject(null);
+    setCurrentBinding(null);
+    setSelectedProfileId('');
+    setIntegrationError('');
+    setConfirmRemoveBinding(false);
+  }
+
+  async function handleSaveBinding() {
+    if (!integrationProject || !selectedProfileId) return;
+    setIntegrationSaving(true);
+    setIntegrationError('');
+    try {
+      const binding = await setProjectIntegration(integrationProject.id, Number(selectedProfileId));
+      setCurrentBinding(binding);
+    } catch (e) {
+      setIntegrationError(e instanceof Error ? e.message : 'Failed to save');
+    } finally {
+      setIntegrationSaving(false);
+    }
+  }
+
+  async function handleRemoveBinding() {
+    if (!integrationProject) return;
+    setConfirmRemoveBinding(false);
+    setIntegrationSaving(true);
+    setIntegrationError('');
+    try {
+      await removeProjectIntegration(integrationProject.id);
+      setCurrentBinding(null);
+      setSelectedProfileId('');
+    } catch (e) {
+      setIntegrationError(e instanceof Error ? e.message : 'Failed to remove');
+    } finally {
+      setIntegrationSaving(false);
+    }
+  }
+
   const memberIds = new Set(members.map((m) => m.id));
   const filteredUsers = memberSearch.trim()
     ? allUsers.filter((u) => {
@@ -192,6 +258,7 @@ export default function ProjectList() {
                   <div style={{ display: 'flex', gap: '0.4rem' }}>
                     {isAdmin && <Button variant="secondary" onClick={() => openEdit(p)}>Edit</Button>}
                     {isAdmin && <Button variant="secondary" onClick={() => openMembers(p)}>Members</Button>}
+                    <Button variant="secondary" onClick={() => openIntegration(p)}>Integration</Button>
                     {isAdmin && <Button variant="danger" onClick={() => setConfirmDelete(p)}>Delete</Button>}
                   </div>
                 </td>
@@ -320,6 +387,72 @@ export default function ProjectList() {
           confirmLabel="Remove"
           onConfirm={handleRemoveMember}
           onCancel={() => setConfirmRemoveMember(null)}
+        />
+      )}
+
+      {integrationProject && (
+        <div className="modal-overlay" onClick={closeIntegration}>
+          <div className="modal" style={{ minWidth: '420px' }} onClick={(e) => e.stopPropagation()}>
+            <h2>Integration — {integrationProject.name}</h2>
+            {integrationError && <p className="error">{integrationError}</p>}
+            {integrationLoading ? (
+              <p className="loading">Loading...</p>
+            ) : (
+              <>
+                <div className="form-group">
+                  <label>Current binding</label>
+                  {currentBinding ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 0' }}>
+                      <Badge value={currentBinding.platform} type="platform" />
+                      <span style={{ color: '#f1f5f9' }}>{currentBinding.name}</span>
+                      <span style={{ color: '#64748b', fontFamily: 'monospace', fontSize: '0.8rem' }}>{currentBinding.repo}</span>
+                    </div>
+                  ) : (
+                    <span style={{ color: '#64748b' }}>None</span>
+                  )}
+                </div>
+
+                {isAdmin && (
+                  <>
+                    <SidebarDropdown
+                      label="Set integration"
+                      value={selectedProfileId}
+                      options={[
+                        { value: '', label: 'Select a profile…' },
+                        ...allProfiles.map((p) => ({ value: String(p.id), label: `${p.name} (${p.platform})` })),
+                      ]}
+                      onChange={setSelectedProfileId}
+                    />
+                    <div className="form-actions" style={{ marginTop: '1rem' }}>
+                      <Button variant="primary" disabled={!selectedProfileId || integrationSaving} onClick={handleSaveBinding}>
+                        {integrationSaving ? 'Saving…' : 'Save'}
+                      </Button>
+                      {currentBinding && (
+                        <Button variant="danger" disabled={integrationSaving} onClick={() => setConfirmRemoveBinding(true)}>Remove</Button>
+                      )}
+                      <Button variant="secondary" onClick={closeIntegration}>Close</Button>
+                    </div>
+                  </>
+                )}
+
+                {!isAdmin && (
+                  <div className="form-actions" style={{ marginTop: '1rem' }}>
+                    <Button variant="secondary" onClick={closeIntegration}>Close</Button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {confirmRemoveBinding && integrationProject && (
+        <ConfirmModal
+          title="Remove Integration"
+          message={<>Remove the integration binding from <span className="confirm-name">{integrationProject.name}</span>?<br /><span className="confirm-sub">Existing linked commits will not be affected.</span></>}
+          confirmLabel="Remove"
+          onConfirm={handleRemoveBinding}
+          onCancel={() => setConfirmRemoveBinding(false)}
         />
       )}
     </div>

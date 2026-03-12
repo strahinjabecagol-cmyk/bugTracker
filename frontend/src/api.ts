@@ -7,6 +7,7 @@ import type {
   AiPortfolioAssessment,
   BugPortfolioAssessment,
   IntegrationProfile,
+  ProjectIntegration,
 } from './types';
 
 const BASE = '/api';
@@ -175,6 +176,19 @@ export function removeLink(bugId: number, linkedBugId: number): Promise<void> {
 // Bug Portfolio Assessment
 export function getBugPortfolioAssessment(bugId: number): Promise<BugPortfolioAssessment | null> {
   return request<BugPortfolioAssessment | null>(`/bugs/${bugId}/portfolio-assessment`);
+}
+
+// Project integration binding
+export function getProjectIntegration(projectId: number): Promise<ProjectIntegration | null> {
+  return request<ProjectIntegration | null>(`/projects/${projectId}/integration`);
+}
+
+export function setProjectIntegration(projectId: number, profileId: number): Promise<ProjectIntegration> {
+  return request<ProjectIntegration>(`/projects/${projectId}/integration`, { method: 'PUT', body: JSON.stringify({ profile_id: profileId }) });
+}
+
+export function removeProjectIntegration(projectId: number): Promise<void> {
+  return request<void>(`/projects/${projectId}/integration`, { method: 'DELETE' });
 }
 
 // Integration profiles

@@ -157,6 +157,15 @@ export interface AiPortfolioAssessment {
   results: AiPortfolioResult[];
 }
 
+export interface ProjectIntegration {
+  project_id: number;
+  profile_id: number;
+  name:       string;
+  platform:   'github' | 'gitlab' | 'bitbucket';
+  base_url:   string;
+  repo:       string;
+}
+
 export interface IntegrationProfile {
   id:         number;
   name:       string;
