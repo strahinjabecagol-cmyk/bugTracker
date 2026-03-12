@@ -34,7 +34,7 @@ function buildAdapters(): PlatformAdapter[] {
     } else if (p.platform === 'github') {
       adapters.push(new GitHubAdapter(p.name, p.repo, p.access_token));
     } else if (p.platform === 'bitbucket') {
-      adapters.push(new BitbucketAdapter(p.name, p.repo, p.access_token));
+      adapters.push(new BitbucketAdapter(p.name, p.repo, p.access_token, p.base_url));
     }
   }
 

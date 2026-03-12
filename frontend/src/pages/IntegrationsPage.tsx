@@ -79,6 +79,7 @@ export default function IntegrationsPage() {
     if (!form.name.trim())  { setFormError('Name is required.'); return; }
     if (!form.repo.trim())  { setFormError('Repo is required.'); return; }
     if (form.platform === 'gitlab' && !form.base_url.trim()) { setFormError('Base URL is required for GitLab.'); return; }
+    if (form.platform === 'bitbucket' && !form.base_url.trim()) { setFormError('Account email is required for Bitbucket.'); return; }
     if (!editing && !form.token.trim()) { setFormError('Access token is required.'); return; }
 
     setSaving(true);
@@ -208,6 +209,13 @@ export default function IntegrationsPage() {
               <div className="form-group">
                 <label>Base URL *</label>
                 <input type="text" value={form.base_url} onChange={(e) => setForm((f) => ({ ...f, base_url: e.target.value }))} placeholder="https://gitlab.yourcompany.com" />
+              </div>
+            )}
+
+            {form.platform === 'bitbucket' && (
+              <div className="form-group">
+                <label>Account Email *</label>
+                <input type="text" value={form.base_url} onChange={(e) => setForm((f) => ({ ...f, base_url: e.target.value }))} placeholder="you@example.com" />
               </div>
             )}
 
