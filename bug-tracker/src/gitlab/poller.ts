@@ -38,6 +38,9 @@ export async function syncCommits() {
     INSERT OR IGNORE INTO bug_commits (bug_id, commit_sha, message, author, committed_at, url)
     VALUES (?, ?, ?, ?, ?, ?)
   `);
+  const backfillUrl = db.prepare(`
+    UPDATE bug_commits SET url = ? WHERE bug_id = ? AND commit_sha = ? AND url = ''
+  `);
 
   for (const commit of allCommits) {
     const refs = [...commit.message.matchAll(BUG_REF)];
@@ -46,6 +49,7 @@ export async function syncCommits() {
       const bug = db.prepare('SELECT id FROM bugs WHERE id = ?').get(bugId);
       if (!bug) continue;
       insert.run(bugId, commit.id, commit.message.split('\n')[0], commit.author_name, commit.committed_date, commit.web_url);
+      backfillUrl.run(commit.web_url, bugId, commit.id);
     }
   }
 
