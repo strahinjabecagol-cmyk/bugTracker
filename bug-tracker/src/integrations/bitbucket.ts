@@ -37,8 +37,8 @@ export class BitbucketAdapter implements PlatformAdapter {
   constructor(name: string, repo: string, token: string) {
     this.name       = name;
     this.repo       = repo;
-    // Bitbucket accepts token-based Basic Auth via the "x-token-auth" pseudo-username
-    this.authHeader = 'Basic ' + Buffer.from(`x-token-auth:${token}`).toString('base64');
+    // New Bitbucket API tokens use Bearer auth (app passwords used x-token-auth Basic, deprecated Sep 2025)
+    this.authHeader = `Bearer ${token}`;
   }
 
   private async fetchBranches(): Promise<string[]> {
