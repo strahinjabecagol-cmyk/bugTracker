@@ -19,6 +19,15 @@ interface BitbucketPage {
   next?:  string; // cursor URL for next page; absent on last page
 }
 
+interface BitbucketBranch {
+  name: string;
+}
+
+interface BitbucketBranchPage {
+  values: BitbucketBranch[];
+  next?:  string;
+}
+
 export class BitbucketAdapter implements PlatformAdapter {
   readonly platform = 'bitbucket';
   readonly name:      string;
@@ -32,16 +41,29 @@ export class BitbucketAdapter implements PlatformAdapter {
     this.authHeader = 'Basic ' + Buffer.from(`x-token-auth:${token}`).toString('base64');
   }
 
-  async fetchAllCommits(): Promise<CommitMetadata[]> {
+  private async fetchBranches(): Promise<string[]> {
+    const branches: string[] = [];
+    let url: string | undefined = `${BITBUCKET_API}/repositories/${this.repo}/refs/branches?pagelen=100`;
+    while (url) {
+      const res = await fetch(url, { headers: { 'Authorization': this.authHeader } });
+      if (!res.ok) {
+        console.warn(`[bitbucket:${this.name}] branches fetch failed: ${res.status} ${res.statusText}`);
+        break;
+      }
+      const page = await res.json() as BitbucketBranchPage;
+      branches.push(...page.values.map((b) => b.name));
+      url = page.next;
+    }
+    return branches;
+  }
+
+  private async fetchCommitsForBranch(branch: string): Promise<CommitMetadata[]> {
     const all: CommitMetadata[] = [];
-    // Bitbucket uses cursor-based pagination — follow the `next` URL until absent
     let url: string | undefined =
-      `${BITBUCKET_API}/repositories/${this.repo}/commits?pagelen=100`;
+      `${BITBUCKET_API}/repositories/${this.repo}/commits/${encodeURIComponent(branch)}?pagelen=100`;
 
     while (url) {
-      const res = await fetch(url, {
-        headers: { 'Authorization': this.authHeader },
-      });
+      const res = await fetch(url, { headers: { 'Authorization': this.authHeader } });
 
       if (res.status === 401 || res.status === 403) {
         throw new Error(`[bitbucket:${this.name}] auth error ${res.status}: check access token`);
@@ -52,17 +74,32 @@ export class BitbucketAdapter implements PlatformAdapter {
       }
 
       const page = await res.json() as BitbucketPage;
-
       all.push(...page.values.map((c) => ({
         sha:         c.hash,
         message:     c.message,
-        // "Display Name <email>" → extract display name before the angle bracket
         author:      c.author.raw.replace(/<[^>]+>/, '').trim() || c.author.raw,
         committedAt: c.date,
         url:         c.links.html.href,
       })));
-
       url = page.next;
+    }
+
+    return all;
+  }
+
+  async fetchAllCommits(): Promise<CommitMetadata[]> {
+    const branches = await this.fetchBranches();
+    const seen = new Set<string>();
+    const all: CommitMetadata[] = [];
+
+    for (const branch of branches) {
+      const commits = await this.fetchCommitsForBranch(branch);
+      for (const c of commits) {
+        if (!seen.has(c.sha)) {
+          seen.add(c.sha);
+          all.push(c);
+        }
+      }
     }
 
     return all;

@@ -14,6 +14,10 @@ interface GitHubCommit {
   html_url: string;
 }
 
+interface GitHubBranch {
+  name: string;
+}
+
 export class GitHubAdapter implements PlatformAdapter {
   readonly platform = 'github';
   readonly name:    string;
@@ -26,23 +30,43 @@ export class GitHubAdapter implements PlatformAdapter {
     this.token = token;
   }
 
-  async fetchAllCommits(): Promise<CommitMetadata[]> {
-    let page = 1;
-    const all: CommitMetadata[] = [];
+  private get headers() {
+    return {
+      'Authorization': `Bearer ${this.token}`,
+      'Accept': 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+    };
+  }
 
+  private async fetchBranches(): Promise<string[]> {
+    const branches: string[] = [];
+    let page = 1;
     while (true) {
       const res = await fetch(
-        `${GITHUB_API}/repos/${this.repo}/commits?per_page=100&page=${page}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${this.token}`,
-            'Accept': 'application/vnd.github+json',
-            'X-GitHub-Api-Version': '2022-11-28',
-          },
-        }
+        `${GITHUB_API}/repos/${this.repo}/branches?per_page=100&page=${page}`,
+        { headers: this.headers }
+      );
+      if (!res.ok) {
+        console.warn(`[github:${this.name}] branches fetch failed: ${res.status} ${res.statusText}`);
+        break;
+      }
+      const batch = await res.json() as GitHubBranch[];
+      branches.push(...batch.map((b) => b.name));
+      if (batch.length < 100) break;
+      page++;
+    }
+    return branches;
+  }
+
+  private async fetchCommitsForBranch(branch: string): Promise<CommitMetadata[]> {
+    const all: CommitMetadata[] = [];
+    let page = 1;
+    while (true) {
+      const res = await fetch(
+        `${GITHUB_API}/repos/${this.repo}/commits?sha=${encodeURIComponent(branch)}&per_page=100&page=${page}`,
+        { headers: this.headers }
       );
 
-      // Log rate limit at debug level
       const remaining = res.headers.get('x-ratelimit-remaining');
       const resetAt   = res.headers.get('x-ratelimit-reset');
       if (remaining !== null) {
@@ -70,6 +94,23 @@ export class GitHubAdapter implements PlatformAdapter {
 
       if (batch.length < 100) break;
       page++;
+    }
+    return all;
+  }
+
+  async fetchAllCommits(): Promise<CommitMetadata[]> {
+    const branches = await this.fetchBranches();
+    const seen = new Set<string>();
+    const all: CommitMetadata[] = [];
+
+    for (const branch of branches) {
+      const commits = await this.fetchCommitsForBranch(branch);
+      for (const c of commits) {
+        if (!seen.has(c.sha)) {
+          seen.add(c.sha);
+          all.push(c);
+        }
+      }
     }
 
     return all;
