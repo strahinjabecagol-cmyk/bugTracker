@@ -24,8 +24,8 @@ export default function BugForm() {
   const [projectId, setProjectId] = useState(selectedProjectId);
   const [reporterId, setReporterId] = useState('');
   const [type, setType] = useState<'bug' | 'task'>('bug');
-  const [priority, setPriority] = useState<'low' | 'medium' | 'high' | 'critical'>('medium');
-  const [severity, setSeverity] = useState<'minor' | 'major' | 'critical' | 'blocker'>('major');
+  const [priority, setPriority] = useState<'low' | 'medium' | 'high' | 'critical'>('low');
+  const [severity, setSeverity] = useState<'minor' | 'major' | 'critical' | 'blocker'>('minor');
   const [assigneeId, setAssigneeId] = useState('');
 
   const [allBugs, setAllBugs] = useState<Bug[]>([]);
