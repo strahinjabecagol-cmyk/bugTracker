@@ -2112,7 +2112,8 @@ h4 { margin: 0 0 0.5rem; font-size: var(--fs-base); font-weight: 600; }
 .ai-assessment-panel .table tbody tr:last-child td { border-bottom: none; }
 
 /* ── AI Usage Page ───────────────────────────────────────── */
-.ai-usage-page h1 { color: #f1f5f9; }
+.ai-usage-page h1,
+.integrations-page h1 { color: #f1f5f9; }
 
 .ai-usage-summary {
   display: flex;
@@ -2155,7 +2156,8 @@ h4 { margin: 0 0 0.5rem; font-size: var(--fs-base); font-weight: 600; }
   color: #a5b4fc;
 }
 
-.ai-usage-page .table {
+.ai-usage-page .table,
+.integrations-page .table {
   background: #0f172a;
   border-radius: 0;
   border-color: #334155;
@@ -2163,7 +2165,8 @@ h4 { margin: 0 0 0.5rem; font-size: var(--fs-base); font-weight: 600; }
   box-shadow: none;
 }
 
-.ai-usage-page .table th {
+.ai-usage-page .table th,
+.integrations-page .table th {
   background: #1e293b;
   color: #64748b;
   border-bottom-color: #334155;
@@ -2171,13 +2174,16 @@ h4 { margin: 0 0 0.5rem; font-size: var(--fs-base); font-weight: 600; }
   letter-spacing: 0.05em;
 }
 
-.ai-usage-page .table td {
+.ai-usage-page .table td,
+.integrations-page .table td {
   color: #cbd5e1;
   border-bottom-color: #1e293b;
 }
 
-.ai-usage-page .table tbody tr:hover { background: #1e293b; }
-.ai-usage-page .table tbody tr:last-child td { border-bottom: none; }
+.ai-usage-page .table tbody tr:hover,
+.integrations-page .table tbody tr:hover { background: #1e293b; }
+.ai-usage-page .table tbody tr:last-child td,
+.integrations-page .table tbody tr:last-child td { border-bottom: none; }
 
 /* ── AI Portfolio Panel ──────────────────────────────────── */
 .ai-portfolio-panel {
