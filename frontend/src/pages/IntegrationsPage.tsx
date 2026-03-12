@@ -129,7 +129,7 @@ export default function IntegrationsPage() {
   return (
     <div className="page integrations-page">
       <div className="page-header">
-        <h1 className="board-heading">Integrations</h1>
+        <h1 className="board-heading"><span>Integrations</span></h1>
         <div className="header-actions">
           <Button variant="primary" onClick={openAdd}>+ Add Integration</Button>
         </div>
