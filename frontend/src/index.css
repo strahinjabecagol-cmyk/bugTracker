@@ -457,6 +457,10 @@ h4 { margin: 0 0 0.5rem; font-size: var(--fs-base); font-weight: 600; }
 .badge-type-bug  { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
 .badge-type-task { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
 
+.badge-platform-github     { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+.badge-platform-gitlab     { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+.badge-platform-bitbucket  { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+
 .badge-role-admin     { background: #ede9fe; color: #6d28d9; border-color: #ddd6fe; }
 .badge-role-developer { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
 .badge-role-tester    { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }

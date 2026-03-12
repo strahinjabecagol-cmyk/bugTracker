@@ -6,6 +6,7 @@ import type {
   AiUsageLog, AiUsageSummary,
   AiPortfolioAssessment,
   BugPortfolioAssessment,
+  IntegrationProfile,
 } from './types';
 
 const BASE = '/api';
@@ -174,4 +175,25 @@ export function removeLink(bugId: number, linkedBugId: number): Promise<void> {
 // Bug Portfolio Assessment
 export function getBugPortfolioAssessment(bugId: number): Promise<BugPortfolioAssessment | null> {
   return request<BugPortfolioAssessment | null>(`/bugs/${bugId}/portfolio-assessment`);
+}
+
+// Integration profiles
+export function getIntegrations(): Promise<IntegrationProfile[]> {
+  return request<IntegrationProfile[]>('/integrations');
+}
+
+export function createIntegration(data: { name: string; platform: string; base_url: string; repo: string; access_token: string }): Promise<IntegrationProfile> {
+  return request<IntegrationProfile>('/integrations', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export function updateIntegration(id: number, data: { name?: string; platform?: string; base_url?: string; repo?: string; access_token?: string }): Promise<IntegrationProfile> {
+  return request<IntegrationProfile>(`/integrations/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+}
+
+// Returns ok:true on success, or ok:false with error + optional projects list on 409
+export async function deleteIntegration(id: number): Promise<{ ok: true } | { ok: false; error: string; projects?: { id: number; name: string }[] }> {
+  const res = await fetch(`${BASE}/integrations/${id}`, { method: 'DELETE', credentials: 'include' });
+  if (res.status === 204) return { ok: true };
+  const data = await res.json();
+  return { ok: false, error: data.error ?? `HTTP ${res.status}`, projects: data.projects };
 }

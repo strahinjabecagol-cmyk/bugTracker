@@ -11,6 +11,7 @@ import Register from './pages/Register';
 import ComponentPlayground from './pages/ComponentPlayground';
 import RiskAssessmentPage from './pages/RiskAssessmentPage';
 import AiUsagePage from './pages/AiUsagePage';
+import IntegrationsPage from './pages/IntegrationsPage';
 import { ProjectProvider } from './context/ProjectContext';
 import { AuthProvider } from './context/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
@@ -47,6 +48,7 @@ export default function App() {
                     <Route path="/risk" element={<RiskAssessmentPage />} />
                     <Route path="/components" element={<AdminRoute><ComponentPlayground /></AdminRoute>} />
                     <Route path="/ai-usage" element={<AdminRoute><AiUsagePage /></AdminRoute>} />
+                    <Route path="/integrations" element={<AdminRoute><IntegrationsPage /></AdminRoute>} />
                   </Routes>
                 </main>
               </ProjectProvider>

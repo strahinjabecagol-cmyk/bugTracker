@@ -157,6 +157,17 @@ export interface AiPortfolioAssessment {
   results: AiPortfolioResult[];
 }
 
+export interface IntegrationProfile {
+  id:         number;
+  name:       string;
+  platform:   'github' | 'gitlab' | 'bitbucket';
+  base_url:   string;
+  repo:       string;
+  created_at: string;
+  updated_at: string;
+  // access_token is never returned by the API
+}
+
 export interface BugFilters {
   status?: string;
   priority?: string;
