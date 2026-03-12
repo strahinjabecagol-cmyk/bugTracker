@@ -1,6 +1,7 @@
 import db from '../db/database';
 import { GitLabAdapter } from '../integrations/gitlab';
 import { GitHubAdapter } from '../integrations/github';
+import { BitbucketAdapter } from '../integrations/bitbucket';
 import type { PlatformAdapter } from '../integrations/types';
 
 const INTERVAL = Number(process.env.GITLAB_POLL_INTERVAL_MS ?? 300_000);
@@ -32,8 +33,9 @@ function buildAdapters(): PlatformAdapter[] {
       adapters.push(new GitLabAdapter(p.name, p.base_url, p.repo, p.access_token));
     } else if (p.platform === 'github') {
       adapters.push(new GitHubAdapter(p.name, p.repo, p.access_token));
+    } else if (p.platform === 'bitbucket') {
+      adapters.push(new BitbucketAdapter(p.name, p.repo, p.access_token));
     }
-    // bitbucket (#196) adapter will be added in the next task
   }
 
   // env-var fallback — only used when no DB profiles are configured (see #203 to remove)
