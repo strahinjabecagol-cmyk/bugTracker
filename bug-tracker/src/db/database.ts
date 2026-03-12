@@ -160,6 +160,35 @@ db.exec(`
   );
 `);
 
+// integration_profiles — one row per configured VCS integration (GitHub, GitLab, Bitbucket)
+// base_url: host root (required for self-hosted GitLab, e.g. https://gitlab.company.com;
+//           optional for GitHub/Bitbucket which have fixed API endpoints)
+// repo:     identifies the repository within the platform —
+//           GitHub/Bitbucket: "owner/repo", GitLab: numeric project ID or "namespace/path"
+// access_token: stored in plaintext for now — see #204 for encryption task
+db.exec(`
+  CREATE TABLE IF NOT EXISTS integration_profiles (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    name         TEXT    NOT NULL,
+    platform     TEXT    NOT NULL CHECK(platform IN ('github', 'gitlab', 'bitbucket')),
+    base_url     TEXT    NOT NULL DEFAULT '',
+    repo         TEXT    NOT NULL,
+    access_token TEXT    NOT NULL,
+    created_at   TEXT    NOT NULL DEFAULT (datetime('now')),
+    updated_at   TEXT    NOT NULL DEFAULT (datetime('now'))
+  );
+`);
+
+// project_integrations — binds a project to one integration profile
+// ON DELETE CASCADE on profile: if profile is deleted the binding is removed
+// (enforced at API layer first with a 409 check — this is a safety net)
+db.exec(`
+  CREATE TABLE IF NOT EXISTS project_integrations (
+    project_id INTEGER PRIMARY KEY REFERENCES projects(id) ON DELETE CASCADE,
+    profile_id INTEGER NOT NULL    REFERENCES integration_profiles(id) ON DELETE CASCADE
+  );
+`);
+
 // Seed initial membership — all existing users become members of all existing projects
 // so nobody is locked out after the migration runs for the first time
 db.exec(`
