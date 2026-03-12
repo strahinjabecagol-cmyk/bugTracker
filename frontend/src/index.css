@@ -876,18 +876,23 @@ h4 { margin: 0 0 0.5rem; font-size: var(--fs-base); font-weight: 600; }
 }
 
 .projects-page .modal,
-.users-page .modal {
+.users-page .modal,
+.integrations-page .modal {
   background: #1e293b;
   border-color: #334155;
   border-radius: 0;
   color: #cbd5e1;
 }
 .projects-page .modal h2,
-.users-page .modal h2 { color: #f1f5f9; }
+.users-page .modal h2,
+.integrations-page .modal h2,
+.integrations-page .modal h3 { color: #f1f5f9; }
 .projects-page .confirm-modal,
-.users-page .confirm-modal { text-align: center; padding: 2rem 2.5rem; }
+.users-page .confirm-modal,
+.integrations-page .confirm-modal { text-align: center; padding: 2rem 2.5rem; }
 .projects-page .confirm-modal .form-actions,
-.users-page .confirm-modal .form-actions { justify-content: center; gap: 0.75rem; }
+.users-page .confirm-modal .form-actions,
+.integrations-page .confirm-modal .form-actions { justify-content: center; gap: 0.75rem; }
 /* Note: dark background inherited from global .confirm-modal rule */
 .confirm-icon { font-size: var(--fs-icon); margin-bottom: 0.75rem; }
 .confirm-message { color: #94a3b8; margin: 0.5rem 0 1.75rem; line-height: 1.7; }
@@ -906,12 +911,16 @@ h4 { margin: 0 0 0.5rem; font-size: var(--fs-base); font-weight: 600; }
 .confirm-modal h2 { color: #f1f5f9; margin-bottom: 0; }
 .confirm-modal .form-actions { justify-content: center; gap: 0.75rem; }
 .projects-page .modal label,
-.users-page .modal label { color: #94a3b8; }
+.users-page .modal label,
+.integrations-page .modal label { color: #94a3b8; }
 .projects-page .modal input,
 .projects-page .modal textarea,
 .users-page .modal input,
 .users-page .modal textarea,
-.users-page .modal select {
+.users-page .modal select,
+.integrations-page .modal input,
+.integrations-page .modal textarea,
+.integrations-page .modal select {
   background: #0f172a;
   border-color: #334155;
   color: #f1f5f9;
@@ -921,14 +930,19 @@ h4 { margin: 0 0 0.5rem; font-size: var(--fs-base); font-weight: 600; }
 .projects-page .modal textarea:focus,
 .users-page .modal input:focus,
 .users-page .modal textarea:focus,
-.users-page .modal select:focus {
+.users-page .modal select:focus,
+.integrations-page .modal input:focus,
+.integrations-page .modal textarea:focus,
+.integrations-page .modal select:focus {
   border-color: rgba(99,102,241,0.6);
   box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
   outline: none;
 }
 .projects-page .modal input::placeholder,
 .projects-page .modal textarea::placeholder,
-.users-page .modal input::placeholder { color: #475569; }
+.users-page .modal input::placeholder,
+.integrations-page .modal input::placeholder,
+.integrations-page .modal textarea::placeholder { color: #475569; }
 
 /* ─── Board ──────────────────────────────────────── */
 .board-page {

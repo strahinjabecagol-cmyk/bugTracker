@@ -127,7 +127,7 @@ export default function IntegrationsPage() {
   }
 
   return (
-    <div className="page ai-usage-page">
+    <div className="page integrations-page">
       <div className="page-header">
         <h1 className="board-heading">Integrations</h1>
         <div className="header-actions">
