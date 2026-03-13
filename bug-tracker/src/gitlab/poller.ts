@@ -14,6 +14,10 @@ const ENV_TOKEN      = process.env.GITLAB_TOKEN;
 
 type ProfileRow = { id: number; name: string; platform: string; base_url: string; repo: string; access_token: string };
 
+const syncingProjects = new Set<number>();
+
+function ts() { return new Date().toISOString(); }
+
 function buildAdapters(): PlatformAdapter[] {
   const adapters: PlatformAdapter[] = [];
   const seen = new Set<number>();
@@ -40,7 +44,7 @@ function buildAdapters(): PlatformAdapter[] {
 
   // env-var fallback — only used when no DB profiles are configured (see #203 to remove)
   if (adapters.length === 0 && ENV_GITLAB_URL && ENV_PROJECT_ID && ENV_TOKEN) {
-    console.log('[sync] no DB profiles found — using env-var GitLab fallback');
+    console.log(`${ts()} [sync] no DB profiles found — using env-var GitLab fallback`);
     adapters.push(new GitLabAdapter('env-fallback', ENV_GITLAB_URL, ENV_PROJECT_ID, ENV_TOKEN));
   }
 
@@ -52,7 +56,7 @@ async function syncFromAdapter(adapter: PlatformAdapter): Promise<number> {
   try {
     commits = await adapter.fetchAllCommits();
   } catch (e) {
-    console.warn(`[sync:${adapter.platform}:${adapter.name}] failed to fetch commits:`, e);
+    console.warn(`${ts()} [sync:${adapter.platform}:${adapter.name}] failed to fetch commits:`, e);
     return 0;
   }
 
@@ -78,15 +82,45 @@ async function syncFromAdapter(adapter: PlatformAdapter): Promise<number> {
   return commits.length;
 }
 
+export async function syncCommitsForProject(projectId: number): Promise<void> {
+  if (syncingProjects.has(projectId)) return;
+  syncingProjects.add(projectId);
+  try {
+  const profile = db.prepare(`
+    SELECT ip.id, ip.name, ip.platform, ip.base_url, ip.repo, ip.access_token
+    FROM integration_profiles ip
+    JOIN project_integrations pi ON pi.profile_id = ip.id
+    WHERE pi.project_id = ?
+  `).get(projectId) as ProfileRow | undefined;
+
+  if (!profile) return;
+
+  let adapter: PlatformAdapter | null = null;
+  if (profile.platform === 'gitlab') {
+    adapter = new GitLabAdapter(profile.name, profile.base_url, profile.repo, profile.access_token);
+  } else if (profile.platform === 'github') {
+    adapter = new GitHubAdapter(profile.name, profile.repo, profile.access_token);
+  } else if (profile.platform === 'bitbucket') {
+    adapter = new BitbucketAdapter(profile.name, profile.repo, profile.access_token, profile.base_url);
+  }
+
+  if (!adapter) return;
+  const count = await syncFromAdapter(adapter);
+  console.log(`${ts()} [sync:${adapter.platform}:${adapter.name}] synced ${count} commits (project ${projectId})`);
+  } finally {
+    syncingProjects.delete(projectId);
+  }
+}
+
 export async function syncCommits(): Promise<void> {
   const adapters = buildAdapters();
   if (adapters.length === 0) {
-    console.log('[sync] no integration profiles configured, skipping');
+    console.log(`${ts()} [sync] no integration profiles configured, skipping`);
     return;
   }
   for (const adapter of adapters) {
     const count = await syncFromAdapter(adapter);
-    console.log(`[sync:${adapter.platform}:${adapter.name}] synced ${count} commits`);
+    console.log(`${ts()} [sync:${adapter.platform}:${adapter.name}] synced ${count} commits`);
   }
 }
 
@@ -95,7 +129,7 @@ export function startPoller(): void {
   // syncCommits() handles the case gracefully when no profiles are configured
   const hasEnvFallback = !!(ENV_GITLAB_URL && ENV_PROJECT_ID && ENV_TOKEN);
   if (!hasEnvFallback) {
-    console.log('[sync] poller started — will sync when integration profiles are configured');
+    console.log(`${ts()} [sync] poller started — will sync when integration profiles are configured`);
   }
   syncCommits().catch(console.error);
   setInterval(() => syncCommits().catch(console.error), INTERVAL);

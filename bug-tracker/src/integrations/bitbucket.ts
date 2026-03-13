@@ -47,7 +47,7 @@ export class BitbucketAdapter implements PlatformAdapter {
     while (url) {
       const res = await fetch(url, { headers: { 'Authorization': this.authHeader } });
       if (!res.ok) {
-        console.warn(`[bitbucket:${this.name}] branches fetch failed: ${res.status} ${res.statusText}`);
+        console.warn(`${new Date().toISOString()} [bitbucket:${this.name}] branches fetch failed: ${res.status} ${res.statusText}`);
         break;
       }
       const page = await res.json() as BitbucketBranchPage;
@@ -69,7 +69,7 @@ export class BitbucketAdapter implements PlatformAdapter {
         throw new Error(`[bitbucket:${this.name}] auth error ${res.status}: check access token`);
       }
       if (!res.ok) {
-        console.warn(`[bitbucket:${this.name}] fetch failed: ${res.status} ${res.statusText}`);
+        console.warn(`${new Date().toISOString()} [bitbucket:${this.name}] fetch failed: ${res.status} ${res.statusText}`);
         break;
       }
 

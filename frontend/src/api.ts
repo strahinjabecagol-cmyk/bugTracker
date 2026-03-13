@@ -116,6 +116,10 @@ export function syncCommits(): Promise<void> {
   return request<void>('/gitlab/sync', { method: 'POST' });
 }
 
+export function syncCommitsForBug(bugId: number): Promise<void> {
+  return request<void>(`/bugs/${bugId}/sync`, { method: 'POST' });
+}
+
 // Comments
 export function getComments(bugId: number): Promise<Comment[]> {
   return request<Comment[]>(`/bugs/${bugId}/comments`);

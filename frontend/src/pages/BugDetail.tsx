@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getBug, getBugs, updateBug, deleteBug, getComments, addComment, getUsers, getProjects, getCommits, syncCommits, getLinks, addLink, removeLink } from '../api';
+import { getBug, getBugs, updateBug, deleteBug, getComments, addComment, getUsers, getProjects, getCommits, syncCommitsForBug, getLinks, addLink, removeLink } from '../api';
 import type { Bug, Comment, User, Project, BugCommit, LinkedItem } from '../types';
 import { useAuth } from '../context/AuthContext';
 import SidebarDropdown from '../components/SidebarDropdown';
@@ -57,15 +57,14 @@ export default function BugDetail() {
   }, []);
 
   useEffect(() => {
-    Promise.all([getBug(bugId), getComments(bugId), getUsers(), getProjects(), getCommits(bugId), getLinks(bugId), getBugs()])
-      .then(([b, c, u, p, commits, lnks, all]) => {
+    Promise.all([getBug(bugId), getComments(bugId), getUsers(), getProjects(), getLinks(bugId), getBugs()])
+      .then(([b, c, u, p, lnks, all]) => {
         setBug(b);
         setEditData(b);
         setEditImages((b.images ?? []).map((img) => img.data_url));
         setComments(c);
         setUsers(u);
         setProjects(p);
-        setCommits(commits);
         setLinks(lnks);
         setAllBugs(all);
         if (authUser?.id) setCommentUserId(String(authUser.id));
@@ -73,6 +72,18 @@ export default function BugDetail() {
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
   }, [bugId, authUser?.id]);
+
+  useEffect(() => {
+    setSyncing(true);
+    syncCommitsForBug(bugId)
+      .catch(console.error)
+      .finally(() => {
+        getCommits(bugId)
+          .then(setCommits)
+          .catch(console.error)
+          .finally(() => setSyncing(false));
+      });
+  }, [bugId]);
 
   const projectName = (pid: number) => projects.find((p) => p.id === pid)?.name ?? `#${pid}`;
   const userName = (uid: number | null) => {
@@ -351,7 +362,7 @@ export default function BugDetail() {
               <label style={{ margin: 0 }}>Commits ({commits.length})</label>
               <Button variant="ghost" style={{ width: 'fit-content' }} disabled={syncing} onClick={async () => {
                 setSyncing(true);
-                await syncCommits().catch(console.error);
+                await syncCommitsForBug(bugId).catch(console.error);
                 const updated = await getCommits(bugId).catch(() => commits);
                 setCommits(updated);
                 setSyncing(false);

@@ -40,7 +40,7 @@ export class GitLabAdapter implements PlatformAdapter {
         { headers: this.authHeader }
       );
       if (!res.ok) {
-        console.warn(`[gitlab:${this.name}] branches fetch failed: ${res.status} ${res.statusText}`);
+        console.warn(`${new Date().toISOString()} [gitlab:${this.name}] branches fetch failed: ${res.status} ${res.statusText}`);
         break;
       }
       const batch = await res.json() as GitLabBranch[];
@@ -60,7 +60,7 @@ export class GitLabAdapter implements PlatformAdapter {
         { headers: this.authHeader }
       );
       if (!res.ok) {
-        console.warn(`[gitlab:${this.name}] fetch failed: ${res.status} ${res.statusText}`);
+        console.warn(`${new Date().toISOString()} [gitlab:${this.name}] fetch failed: ${res.status} ${res.statusText}`);
         break;
       }
       const batch = await res.json() as GitLabApiCommit[];

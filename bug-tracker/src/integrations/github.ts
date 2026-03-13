@@ -47,7 +47,7 @@ export class GitHubAdapter implements PlatformAdapter {
         { headers: this.headers }
       );
       if (!res.ok) {
-        console.warn(`[github:${this.name}] branches fetch failed: ${res.status} ${res.statusText}`);
+        console.warn(`${new Date().toISOString()} [github:${this.name}] branches fetch failed: ${res.status} ${res.statusText}`);
         break;
       }
       const batch = await res.json() as GitHubBranch[];
@@ -70,14 +70,14 @@ export class GitHubAdapter implements PlatformAdapter {
       const remaining = res.headers.get('x-ratelimit-remaining');
       const resetAt   = res.headers.get('x-ratelimit-reset');
       if (remaining !== null) {
-        console.debug(`[github:${this.name}] rate limit remaining: ${remaining}, resets at: ${resetAt}`);
+        console.debug(`${new Date().toISOString()} [github:${this.name}] rate limit remaining: ${remaining}, resets at: ${resetAt}`);
       }
 
       if (res.status === 401 || res.status === 403) {
         throw new Error(`[github:${this.name}] auth error ${res.status}: check access token`);
       }
       if (!res.ok) {
-        console.warn(`[github:${this.name}] fetch failed: ${res.status} ${res.statusText}`);
+        console.warn(`${new Date().toISOString()} [github:${this.name}] fetch failed: ${res.status} ${res.statusText}`);
         break;
       }
 

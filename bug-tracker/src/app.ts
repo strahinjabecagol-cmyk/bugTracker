@@ -16,7 +16,7 @@ import projectIntegrationRouter from './routes/projectIntegration';
 import authRouter from './routes/auth';
 import { requireAuth, requireAdmin } from './middleware/auth';
 import { broadcast } from './ws';
-import { startPoller, syncCommits } from './gitlab/poller';
+import { startPoller, syncCommits, syncCommitsForProject } from './gitlab/poller';
 import db from './db/database';
 
 const app = express();
@@ -81,10 +81,9 @@ app.get('/bugs/:id/portfolio-assessment', (req, res) => {
   res.json(result ?? null);
 });
 
-// GET /bugs/:id/commits — syncs from GitLab remote, then returns stored commits
-app.get('/bugs/:id/commits', async (req, res) => {
+// GET /bugs/:id/commits — returns stored commits from DB
+app.get('/bugs/:id/commits', (req, res) => {
   const bugId = Number(req.params.id);
-  await syncCommits();
   const commits = db.prepare('SELECT * FROM bug_commits WHERE bug_id = ? ORDER BY committed_at DESC').all(bugId);
   res.json(commits);
 });
@@ -129,6 +128,15 @@ app.get('/ai-usage', requireAdmin, (_req, res) => {
 // POST /gitlab/sync — manual sync trigger
 app.post('/gitlab/sync', async (_req, res) => {
   await syncCommits();
+  res.json({ ok: true });
+});
+
+// POST /bugs/:id/sync — sync only the project bound to this bug
+app.post('/bugs/:id/sync', async (req, res) => {
+  const bugId = Number(req.params.id);
+  const bug = db.prepare('SELECT project_id FROM bugs WHERE id = ?').get(bugId) as { project_id: number } | undefined;
+  if (!bug) { res.status(404).json({ error: 'Bug not found' }); return; }
+  await syncCommitsForProject(bug.project_id);
   res.json({ ok: true });
 });
 
