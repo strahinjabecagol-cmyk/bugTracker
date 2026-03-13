@@ -7,10 +7,10 @@ import type { PlatformAdapter } from '../integrations/types';
 const INTERVAL = Number(process.env.GITLAB_POLL_INTERVAL_MS ?? 300_000);
 const BUG_REF  = /#(\d+)/g;
 
-// env-var fallback — kept for backward compat until profiles are fully adopted (see #203)
-const ENV_GITLAB_URL = process.env.GITLAB_URL;
-const ENV_PROJECT_ID = process.env.GITLAB_PROJECT_ID;
-const ENV_TOKEN      = process.env.GITLAB_TOKEN;
+// env-var fallback — disabled in #203, kept commented for emergency rollback
+// const ENV_GITLAB_URL = process.env.GITLAB_URL;
+// const ENV_PROJECT_ID = process.env.GITLAB_PROJECT_ID;
+// const ENV_TOKEN      = process.env.GITLAB_TOKEN;
 
 type ProfileRow = { id: number; name: string; platform: string; base_url: string; repo: string; access_token: string };
 
@@ -42,11 +42,11 @@ function buildAdapters(): PlatformAdapter[] {
     }
   }
 
-  // env-var fallback — only used when no DB profiles are configured (see #203 to remove)
-  if (adapters.length === 0 && ENV_GITLAB_URL && ENV_PROJECT_ID && ENV_TOKEN) {
-    console.log(`${ts()} [sync] no DB profiles found — using env-var GitLab fallback`);
-    adapters.push(new GitLabAdapter('env-fallback', ENV_GITLAB_URL, ENV_PROJECT_ID, ENV_TOKEN));
-  }
+  // env-var fallback — disabled in #203, kept commented for emergency rollback
+  // if (adapters.length === 0 && ENV_GITLAB_URL && ENV_PROJECT_ID && ENV_TOKEN) {
+  //   console.log(`${ts()} [sync] no DB profiles found — using env-var GitLab fallback`);
+  //   adapters.push(new GitLabAdapter('env-fallback', ENV_GITLAB_URL, ENV_PROJECT_ID, ENV_TOKEN));
+  // }
 
   return adapters;
 }
@@ -127,10 +127,7 @@ export async function syncCommits(): Promise<void> {
 export function startPoller(): void {
   // Always start the interval — profiles can be added at runtime
   // syncCommits() handles the case gracefully when no profiles are configured
-  const hasEnvFallback = !!(ENV_GITLAB_URL && ENV_PROJECT_ID && ENV_TOKEN);
-  if (!hasEnvFallback) {
-    console.log(`${ts()} [sync] poller started — will sync when integration profiles are configured`);
-  }
+  console.log(`${ts()} [sync] poller started`);
   syncCommits().catch(console.error);
   setInterval(() => syncCommits().catch(console.error), INTERVAL);
 }
