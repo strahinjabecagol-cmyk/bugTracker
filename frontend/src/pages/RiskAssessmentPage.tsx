@@ -144,7 +144,7 @@ export default function RiskAssessmentPage() {
             </div>
           </div>
 
-          <AiPortfolioPanel readOnly={!isAdmin} />
+          <AiPortfolioPanel readOnly={!isAdmin} projectId={selectedProjectId} />
         </>
       )}
     </div>

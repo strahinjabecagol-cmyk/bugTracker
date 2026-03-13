@@ -146,12 +146,16 @@ export function getAiUsage(): Promise<AiUsageSummary> {
 }
 
 // AI Portfolio Assessment
-export function runPortfolioAssess(): Promise<AiPortfolioAssessment> {
-  return request<AiPortfolioAssessment>('/ai-portfolio-assess', { method: 'POST' });
+export function runPortfolioAssess(projectId?: number | null): Promise<AiPortfolioAssessment> {
+  return request<AiPortfolioAssessment>('/ai-portfolio-assess', {
+    method: 'POST',
+    body: JSON.stringify(projectId ? { project_id: projectId } : {}),
+  });
 }
 
-export function getLatestPortfolioAssess(): Promise<AiPortfolioAssessment> {
-  return request<AiPortfolioAssessment>('/ai-portfolio-assess/latest');
+export function getLatestPortfolioAssess(projectId?: number | null): Promise<AiPortfolioAssessment> {
+  const qs = projectId ? `?project_id=${projectId}` : '';
+  return request<AiPortfolioAssessment>(`/ai-portfolio-assess/latest${qs}`);
 }
 
 export function applyPortfolioAssess(bugIds?: number[]): Promise<{ applied: number[] }> {

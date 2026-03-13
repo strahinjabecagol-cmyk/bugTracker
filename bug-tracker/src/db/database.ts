@@ -132,9 +132,17 @@ db.exec(`
     model      TEXT    NOT NULL,
     tokens_in  INTEGER NOT NULL,
     tokens_out INTEGER NOT NULL,
-    item_count INTEGER NOT NULL
+    item_count INTEGER NOT NULL,
+    project_id INTEGER
   );
 `);
+
+// Migration: add project_id to ai_portfolio_log if it doesn't exist yet
+try {
+  db.exec(`ALTER TABLE ai_portfolio_log ADD COLUMN project_id INTEGER;`);
+} catch {
+  // column already exists — no-op
+}
 
 // AI portfolio results — one row per item per run
 db.exec(`

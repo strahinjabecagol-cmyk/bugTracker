@@ -7,13 +7,14 @@ import Button from './Button';
 
 interface AiPortfolioPanelProps {
   readOnly?: boolean;
+  projectId?: number | null;
 }
 
 function suggestionsMatchCurrent(r: AiPortfolioResult): boolean {
   return r.suggested_priority === r.current_priority && r.suggested_severity === r.current_severity;
 }
 
-export default function AiPortfolioPanel({ readOnly = false }: AiPortfolioPanelProps) {
+export default function AiPortfolioPanel({ readOnly = false, projectId }: AiPortfolioPanelProps) {
   const [data, setData] = useState<AiPortfolioAssessment | null>(null);
   const [loading, setLoading] = useState(true);
   const [running, setRunning] = useState(false);
@@ -23,7 +24,10 @@ export default function AiPortfolioPanel({ readOnly = false }: AiPortfolioPanelP
   const initialLoadDone = useRef(false);
 
   useEffect(() => {
-    getLatestPortfolioAssess()
+    setLoading(true);
+    setData(null);
+    initialLoadDone.current = false;
+    getLatestPortfolioAssess(projectId)
       .then((result) => {
         setData(result);
         // Pre-populate applied state for existing run so rows that already match show as applied
@@ -36,13 +40,13 @@ export default function AiPortfolioPanel({ readOnly = false }: AiPortfolioPanelP
       })
       .catch(() => setError('Failed to load portfolio assessment.'))
       .finally(() => setLoading(false));
-  }, []);
+  }, [projectId]);
 
   async function handleRun() {
     setRunning(true);
     setError('');
     try {
-      const result = await runPortfolioAssess();
+      const result = await runPortfolioAssess(projectId);
       setData(result);
       setAppliedInSession(new Set()); // fresh run — nothing applied yet in this session
     } catch (e) {

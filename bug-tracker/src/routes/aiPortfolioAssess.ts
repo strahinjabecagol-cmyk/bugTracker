@@ -29,7 +29,9 @@ interface PortfolioResult {
 }
 
 // POST /ai-portfolio-assess — admin only
-router.post('/', requireAdmin, async (_req, res) => {
+router.post('/', requireAdmin, async (req, res) => {
+  const projectId: number | undefined = req.body?.project_id ? Number(req.body.project_id) : undefined;
+
   const items = db.prepare(`
     SELECT
       b.id, b.title, b.type, b.description, b.priority, b.severity,
@@ -37,8 +39,9 @@ router.post('/', requireAdmin, async (_req, res) => {
       (SELECT COUNT(*) FROM comments c WHERE c.bug_id = b.id) AS comment_count
     FROM bugs b
     WHERE b.status IN ('open', 'in_progress')
+      ${projectId ? 'AND b.project_id = ?' : ''}
     ORDER BY b.id
-  `).all() as BugRow[];
+  `).all(...(projectId ? [projectId] : [])) as BugRow[];
 
   if (items.length === 0) {
     res.json({ run: null, results: [], message: 'No open or in-progress items to assess.' });
@@ -80,9 +83,9 @@ Respond with a JSON array only — no markdown fences, no extra text:
 
     // Insert run log
     const runResult = db.prepare(`
-      INSERT INTO ai_portfolio_log (model, tokens_in, tokens_out, item_count)
-      VALUES (?, ?, ?, ?)
-    `).run(MODEL, tokensIn, tokensOut, items.length);
+      INSERT INTO ai_portfolio_log (model, tokens_in, tokens_out, item_count, project_id)
+      VALUES (?, ?, ?, ?, ?)
+    `).run(MODEL, tokensIn, tokensOut, items.length, projectId ?? null);
 
     const runId = runResult.lastInsertRowid as number;
 
@@ -115,10 +118,14 @@ Respond with a JSON array only — no markdown fences, no extra text:
 });
 
 // GET /ai-portfolio-assess/latest — all authenticated users
-router.get('/latest', (_req, res) => {
+router.get('/latest', (req, res) => {
+  const projectId: number | undefined = req.query.project_id ? Number(req.query.project_id) : undefined;
+
   const run = db.prepare(`
-    SELECT * FROM ai_portfolio_log ORDER BY run_at DESC LIMIT 1
-  `).get() as { id: number } | undefined;
+    SELECT * FROM ai_portfolio_log
+    WHERE ${projectId ? 'project_id = ?' : '1=1'}
+    ORDER BY run_at DESC LIMIT 1
+  `).get(...(projectId ? [projectId] : [])) as { id: number } | undefined;
 
   if (!run) {
     res.json({ run: null, results: [] });
