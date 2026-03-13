@@ -175,6 +175,15 @@ h4 { margin: 0 0 0.5rem; font-size: var(--fs-base); font-weight: 600; }
   color: #a5b4fc;
 }
 
+@media (max-width: 1200px) {
+  .navbar-links a { padding: 0.375rem 0.25rem; }
+}
+@media (max-width: 1024px) {
+  .navbar { gap: 0.25rem; padding: 0 0.5rem; }
+  .navbar-links a { padding: 0.375rem 0.15rem; font-size: var(--fs-sm); }
+  .navbar-user-name { display: none; }
+}
+
 /* ─── Page layout ────────────────────────────────── */
 .main-content {
   padding: 2rem;
