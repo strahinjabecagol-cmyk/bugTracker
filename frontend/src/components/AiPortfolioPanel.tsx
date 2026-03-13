@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { AiPortfolioAssessment, AiPortfolioResult } from '../types';
 import { getLatestPortfolioAssess, runPortfolioAssess, applyPortfolioAssess, updateBug } from '../api';
@@ -9,7 +9,7 @@ interface AiPortfolioPanelProps {
   readOnly?: boolean;
 }
 
-function isApplied(r: AiPortfolioResult): boolean {
+function suggestionsMatchCurrent(r: AiPortfolioResult): boolean {
   return r.suggested_priority === r.current_priority && r.suggested_severity === r.current_severity;
 }
 
@@ -19,10 +19,21 @@ export default function AiPortfolioPanel({ readOnly = false }: AiPortfolioPanelP
   const [running, setRunning] = useState(false);
   const [applying, setApplying] = useState<'all' | number | null>(null);
   const [error, setError] = useState('');
+  const [appliedInSession, setAppliedInSession] = useState<Set<number>>(new Set());
+  const initialLoadDone = useRef(false);
 
   useEffect(() => {
     getLatestPortfolioAssess()
-      .then(setData)
+      .then((result) => {
+        setData(result);
+        // Pre-populate applied state for existing run so rows that already match show as applied
+        if (!initialLoadDone.current && result?.results) {
+          initialLoadDone.current = true;
+          setAppliedInSession(new Set(
+            result.results.filter(suggestionsMatchCurrent).map((r) => r.bug_id)
+          ));
+        }
+      })
       .catch(() => setError('Failed to load portfolio assessment.'))
       .finally(() => setLoading(false));
   }, []);
@@ -33,6 +44,7 @@ export default function AiPortfolioPanel({ readOnly = false }: AiPortfolioPanelP
     try {
       const result = await runPortfolioAssess();
       setData(result);
+      setAppliedInSession(new Set()); // fresh run — nothing applied yet in this session
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Assessment failed');
     } finally {
@@ -53,6 +65,11 @@ export default function AiPortfolioPanel({ readOnly = false }: AiPortfolioPanelP
           current_severity: r.suggested_severity,
         })),
       } : prev);
+      setAppliedInSession((prev) => {
+        const next = new Set(prev);
+        data?.results.forEach((r) => next.add(r.bug_id));
+        return next;
+      });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Apply failed');
     } finally {
@@ -68,7 +85,6 @@ export default function AiPortfolioPanel({ readOnly = false }: AiPortfolioPanelP
         priority: r.suggested_priority,
         severity: r.suggested_severity,
       });
-      // Update local state to reflect applied row
       setData((prev) => prev ? {
         ...prev,
         results: prev.results.map((res) =>
@@ -77,6 +93,7 @@ export default function AiPortfolioPanel({ readOnly = false }: AiPortfolioPanelP
             : res
         ),
       } : prev);
+      setAppliedInSession((prev) => new Set([...prev, r.bug_id]));
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Apply failed');
     } finally {
@@ -85,7 +102,7 @@ export default function AiPortfolioPanel({ readOnly = false }: AiPortfolioPanelP
   }
 
   const hasResults = !!data?.run && data.results.length > 0;
-  const anyUnapplied = hasResults && data!.results.some((r) => !isApplied(r));
+  const anyUnapplied = hasResults && data!.results.some((r) => !appliedInSession.has(r.bug_id));
 
   return (
     <div className="detail-card ai-assessment-panel ai-portfolio-panel">
@@ -147,7 +164,7 @@ export default function AiPortfolioPanel({ readOnly = false }: AiPortfolioPanelP
             </thead>
             <tbody>
               {data!.results.map((r) => {
-                const applied = isApplied(r);
+                const applied = appliedInSession.has(r.bug_id);
                 return (
                   <tr key={r.id}>
                     <td style={{ fontWeight: 700, color: '#e2e8f0' }}>#{r.rank}</td>
