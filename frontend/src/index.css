@@ -148,7 +148,7 @@ h4 { margin: 0 0 0.5rem; font-size: var(--fs-base); font-weight: 600; }
 .project-dropdown-item:hover { background: rgba(99,102,241,0.22); color: #c7d2fe; }
 .project-dropdown-item.active { background: rgba(99,102,241,0.28); color: #a5b4fc; font-weight: 600; }
 
-.navbar-links { display: flex; gap: 0; margin-left: auto; }
+.navbar-links { display: flex; gap: 0; flex: 1; justify-content: center; }
 
 .navbar-links a {
   color: #64748b;
