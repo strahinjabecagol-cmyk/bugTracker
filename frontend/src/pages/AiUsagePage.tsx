@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAiUsage } from '../api';
 import type { AiUsageSummary, AiUsageLog, AiPortfolioLogEntry } from '../types';
+import { calcCostDollars, formatCost } from '../utils/cost';
 
 type SortCol = 'created_at' | 'bug_id' | 'model' | 'tokens_in' | 'tokens_out' | 'total';
 type SortDir = 'asc' | 'desc';
@@ -90,6 +91,10 @@ export default function AiUsagePage() {
               <span className="ai-usage-stat-label">Total Tokens</span>
               <span className="ai-usage-stat-value">{(data.total_tokens_in + data.total_tokens_out).toLocaleString()}</span>
             </div>
+            <div className="ai-usage-stat">
+              <span className="ai-usage-stat-label">Est. Cost</span>
+              <span className="ai-usage-stat-value">{formatCost(calcCostDollars(data.total_tokens_in, data.total_tokens_out))}</span>
+            </div>
           </div>
 
           <div className="ai-usage-summary" style={{ marginTop: '1rem' }}>
@@ -116,11 +121,12 @@ export default function AiUsagePage() {
                 <Th col="tokens_in">In</Th>
                 <Th col="tokens_out">Out</Th>
                 <Th col="total">Total</Th>
+                <th>Cost</th>
               </tr>
             </thead>
             <tbody>
               {sorted.length === 0 ? (
-                <tr><td colSpan={6} style={{ textAlign: 'center', color: '#64748b' }}>No assessments yet</td></tr>
+                <tr><td colSpan={7} style={{ textAlign: 'center', color: '#64748b' }}>No assessments yet</td></tr>
               ) : sorted.map((row) => (
                 <tr key={row.id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/bugs/${row.bug_id}`)}>
                   <td>{new Date(row.created_at).toLocaleString()}</td>
@@ -132,6 +138,7 @@ export default function AiUsagePage() {
                   <td>{row.tokens_in}</td>
                   <td>{row.tokens_out}</td>
                   <td style={{ fontWeight: 600 }}>{row.tokens_in + row.tokens_out}</td>
+                  <td style={{ color: '#4ade80', fontWeight: 600 }}>{formatCost(calcCostDollars(row.tokens_in, row.tokens_out))}</td>
                 </tr>
               ))}
             </tbody>
@@ -158,6 +165,10 @@ export default function AiUsagePage() {
               <span className="ai-usage-stat-label">Total Tokens</span>
               <span className="ai-usage-stat-value">{(data.portfolio_total_tokens_in + data.portfolio_total_tokens_out).toLocaleString()}</span>
             </div>
+            <div className="ai-usage-stat">
+              <span className="ai-usage-stat-label">Est. Cost</span>
+              <span className="ai-usage-stat-value">{formatCost(calcCostDollars(data.portfolio_total_tokens_in, data.portfolio_total_tokens_out))}</span>
+            </div>
           </div>
 
           <table className="table" style={{ marginTop: '1rem' }}>
@@ -169,11 +180,12 @@ export default function AiUsagePage() {
                 <th>Tokens In</th>
                 <th>Tokens Out</th>
                 <th>Total</th>
+                <th>Cost</th>
               </tr>
             </thead>
             <tbody>
               {data.portfolio_log.length === 0 ? (
-                <tr><td colSpan={6} style={{ textAlign: 'center', color: '#64748b' }}>No portfolio runs yet</td></tr>
+                <tr><td colSpan={7} style={{ textAlign: 'center', color: '#64748b' }}>No portfolio runs yet</td></tr>
               ) : data.portfolio_log.map((row: AiPortfolioLogEntry) => (
                 <tr key={row.id}>
                   <td>{new Date(row.run_at).toLocaleString()}</td>
@@ -182,6 +194,7 @@ export default function AiUsagePage() {
                   <td>{row.tokens_in}</td>
                   <td>{row.tokens_out}</td>
                   <td style={{ fontWeight: 600 }}>{row.tokens_in + row.tokens_out}</td>
+                  <td style={{ color: '#4ade80', fontWeight: 600 }}>{formatCost(calcCostDollars(row.tokens_in, row.tokens_out))}</td>
                 </tr>
               ))}
             </tbody>

@@ -3,6 +3,7 @@ import type { Bug, AiUsageLog } from '../types';
 import { aiAssess, getAiHistory, updateBug } from '../api';
 import Badge from './Badge';
 import Button from './Button';
+import { calcCostDollars, formatCost } from '../utils/cost';
 
 interface AiAssessmentPanelProps {
   bug: Bug;
@@ -95,6 +96,11 @@ export default function AiAssessmentPanel({ bug, readOnly = false, onBugUpdated 
                 {current.ai_tokens_in} ↑ &nbsp;{current.ai_tokens_out} ↓ tokens
               </span>
             )}
+            {current.ai_tokens_in != null && (
+              <span style={{ marginLeft: '0.75rem', color: '#4ade80', fontWeight: 600 }}>
+                {formatCost(calcCostDollars(current.ai_tokens_in, current.ai_tokens_out ?? 0))}
+              </span>
+            )}
           </p>
         )}
       </div>
@@ -150,6 +156,7 @@ export default function AiAssessmentPanel({ bug, readOnly = false, onBugUpdated 
                 <th>Model</th>
                 <th>↑ In</th>
                 <th>↓ Out</th>
+                <th>Cost</th>
               </tr>
             </thead>
             <tbody>
@@ -159,6 +166,7 @@ export default function AiAssessmentPanel({ bug, readOnly = false, onBugUpdated 
                   <td style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: '#94a3b8' }}>{h.model}</td>
                   <td>{h.tokens_in}</td>
                   <td>{h.tokens_out}</td>
+                  <td style={{ color: '#4ade80', fontWeight: 600 }}>{formatCost(calcCostDollars(h.tokens_in, h.tokens_out))}</td>
                 </tr>
               ))}
             </tbody>

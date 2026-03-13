@@ -4,6 +4,7 @@ import type { AiPortfolioAssessment, AiPortfolioResult } from '../types';
 import { getLatestPortfolioAssess, runPortfolioAssess, applyPortfolioAssess, updateBug } from '../api';
 import Badge from './Badge';
 import Button from './Button';
+import { calcCostDollars, formatCost } from '../utils/cost';
 
 interface AiPortfolioPanelProps {
   readOnly?: boolean;
@@ -131,6 +132,9 @@ export default function AiPortfolioPanel({ readOnly = false, projectId }: AiPort
             Last run: {new Date(data.run.run_at).toLocaleString()}
             <span style={{ marginLeft: '0.75rem', color: '#64748b' }}>
               {data.run.tokens_in} ↑ &nbsp;{data.run.tokens_out} ↓ tokens · {data.run.item_count} items
+            </span>
+            <span style={{ marginLeft: '0.75rem', color: '#4ade80', fontWeight: 600 }}>
+              {formatCost(calcCostDollars(data.run.tokens_in, data.run.tokens_out))}
             </span>
           </p>
         )}
