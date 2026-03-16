@@ -70,12 +70,18 @@ Respond with a JSON array only — no markdown fences, no extra text:
   try {
     const response = await client.messages.create({
       model: MODEL,
-      max_tokens: 2048,
+      max_tokens: 8192,
       messages: [{ role: 'user', content: prompt }],
     });
 
     let text = (response.content[0] as { type: string; text: string }).text.trim();
-    text = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+    // Extract the JSON array by finding the first [ and last ] to handle any surrounding text or markdown
+    const arrayStart = text.indexOf('[');
+    const arrayEnd = text.lastIndexOf(']');
+    if (arrayStart === -1 || arrayEnd === -1 || arrayEnd < arrayStart) {
+      throw new Error(`AI response did not contain a valid JSON array. Response started with: ${text.slice(0, 200)}`);
+    }
+    text = text.slice(arrayStart, arrayEnd + 1);
     const parsed = JSON.parse(text) as PortfolioResult[];
 
     const tokensIn = response.usage.input_tokens;
