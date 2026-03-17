@@ -29,6 +29,8 @@ Type: ${bug.type}
 Status: ${bug.status}
 Description: ${bug.description || '(none)'}${comments.length > 0 ? `\nComments:\n${comments.map((c) => `- ${c.content}`).join('\n')}` : ''}${links.length > 0 ? `\nLinked items:\n${links.map((l) => `- #${l.id} ${l.title} (${l.priority} priority, ${l.severity} severity)`).join('\n')}` : ''}
 
+IMPORTANT — severity and priority are INDEPENDENT dimensions: severity measures impact/scope (how bad is it if it happens), priority measures urgency (how soon must it be addressed). A high-severity item can have low priority (e.g. an important architectural issue that is not time-sensitive). A low-severity item can have high priority (e.g. a minor UI glitch blocking a demo). Do NOT assume high severity implies high priority or vice versa.
+
 Respond with a JSON object only, no markdown, no extra text:
 {"explanation":"<2-4 sentences>","suggested_priority":"<low|medium|high|critical>","suggested_severity":"<minor|major|critical|blocker>"}`;
 

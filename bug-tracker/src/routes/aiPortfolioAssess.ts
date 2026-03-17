@@ -60,7 +60,9 @@ ${itemList}
 INSTRUCTIONS:
 - Rank all items from 1 (highest risk) to ${items.length} (lowest risk). No ties.
 - Assign suggested_priority (critical/high/medium/low) and suggested_severity (blocker/critical/major/minor).
-- FORCED GRADATION RULE: No more than 30% of items may share the same suggested_priority tier. You MUST spread the distribution across all four priority levels (critical, high, medium, low).
+- FORCED PRIORITY GRADATION: No more than 30% of items may share the same suggested_priority tier. You MUST spread the distribution across all four priority levels (critical, high, medium, low).
+- FORCED SEVERITY GRADATION: No more than 30% of items may share the same suggested_severity tier. You MUST spread the distribution across all four severity levels (blocker, critical, major, minor).
+- IMPORTANT — severity and priority are INDEPENDENT dimensions: severity measures impact/scope (how bad is it if it happens), priority measures urgency (how soon must it be addressed). A high-severity item can have low priority (e.g. an important architectural issue that is not time-sensitive). A low-severity item can have high priority (e.g. a minor UI glitch blocking a demo). Do NOT assume high severity implies high priority or vice versa.
 - Write a one-sentence rationale explaining the ranking.
 - Consider: complexity, links to other items, description quality, comment activity, type (bug vs task).
 
