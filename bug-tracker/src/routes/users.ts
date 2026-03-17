@@ -3,7 +3,7 @@ import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import db, { DELETED_USER_ID } from '../db/database';
 import { validate } from '../middleware/validate';
-import { requireAdmin } from '../middleware/auth';
+import { requireAdmin, requireAuth } from '../middleware/auth';
 
 const router = Router();
 
@@ -17,7 +17,7 @@ const UserCreateSchema = z.object({
 const UserUpdateSchema = UserCreateSchema.partial();
 
 // GET /users
-router.get('/', requireAdmin, (_req, res) => {
+router.get('/', requireAuth, (_req, res) => {
   const users = db.prepare('SELECT * FROM users ORDER BY id').all();
   res.json(users);
 });

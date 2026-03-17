@@ -42,7 +42,7 @@ export default function BugForm() {
   }, []);
 
   useEffect(() => {
-    Promise.all([getProjects(), getUsers(), getBugs()]).then(([p, u, b]) => {
+    Promise.all([getProjects(), getUsers().catch(() => []), getBugs()]).then(([p, u, b]) => {
       setProjects(p);
       setUsers(u);
       setAllBugs(b);

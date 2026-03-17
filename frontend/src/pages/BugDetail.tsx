@@ -57,7 +57,7 @@ export default function BugDetail() {
   }, []);
 
   useEffect(() => {
-    Promise.all([getBug(bugId), getComments(bugId), getUsers(), getProjects(), getLinks(bugId), getBugs()])
+    Promise.all([getBug(bugId), getComments(bugId), getUsers().catch(() => []), getProjects(), getLinks(bugId), getBugs()])
       .then(([b, c, u, p, lnks, all]) => {
         setBug(b);
         setEditData(b);
