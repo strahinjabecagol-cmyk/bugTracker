@@ -126,7 +126,7 @@ export default function RiskAssessmentPage() {
                         className={hoveredId === bug.id ? 'risk-row--hovered' : ''}
                         onMouseEnter={() => setHoveredId(bug.id)}
                         onMouseLeave={() => setHoveredId(null)}
-                        onClick={() => navigate(`/bugs/${bug.id}`)}
+                        onClick={(e) => { if (e.clientY < 56) return; navigate(`/bugs/${bug.id}`); }}
                         style={{ cursor: 'pointer' }}
                       >
                         <td>#{bug.id}</td>
