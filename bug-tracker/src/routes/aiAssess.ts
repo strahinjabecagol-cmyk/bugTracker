@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import Anthropic from '@anthropic-ai/sdk';
 import db from '../db/database';
-import { requireAdmin } from '../middleware/auth';
+import { requireAdmin, requireAuth } from '../middleware/auth';
 
 const router = Router({ mergeParams: true });
 const MODEL = 'claude-haiku-4-5-20251001';
@@ -69,7 +69,7 @@ Respond with a JSON object only, no markdown, no extra text:
 });
 
 // GET /bugs/:id/ai-assess/history
-router.get('/history', requireAdmin, (req, res) => {
+router.get('/history', requireAuth, (req, res) => {
   const bugId = Number(req.params.id);
   const rows = db.prepare('SELECT * FROM ai_usage_log WHERE bug_id = ? ORDER BY created_at DESC').all(bugId);
   res.json(rows);
