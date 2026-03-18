@@ -8,7 +8,6 @@ export function calcCostDollars(tokensIn: number, tokensOut: number): number {
 }
 
 export function formatCost(dollars: number): string {
-  if (dollars === 0) return '$0.00';
-  if (dollars < 0.01) return `${(dollars * 100).toFixed(3)}¢`;
+  if (dollars === 0) return '$0.0000';
   return `$${dollars.toFixed(4)}`;
 }
