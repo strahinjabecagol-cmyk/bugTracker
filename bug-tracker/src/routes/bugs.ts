@@ -14,7 +14,7 @@ const BugCreateSchema = z.object({
   type:        z.enum(['bug', 'task']).optional().default('bug'),
   priority:    z.enum(['low', 'medium', 'high', 'critical']).optional().default('low'),
   severity:    z.enum(['minor', 'major', 'critical', 'blocker']).optional().default('minor'),
-  reporter_id: z.number().int().positive(),
+  reporter_id: z.number().int().positive().optional(),
   assignee_id: z.number().int().positive().nullable().optional(),
   images:      z.array(z.string()).optional(),
 });
@@ -85,8 +85,9 @@ router.get('/:id', (req, res) => {
 
 // POST /bugs
 router.post('/', validate(BugCreateSchema), requireProjectMember, (req, res) => {
-  const { project_id, title, description, type, priority, severity, reporter_id, assignee_id, images } =
+  const { project_id, title, description, type, priority, severity, assignee_id, images } =
     req.body as z.infer<typeof BugCreateSchema>;
+  const reporter_id = req.user!.id;
 
   const info = db.prepare(`
     INSERT INTO bugs (project_id, title, description, type, priority, severity, reporter_id, assignee_id)

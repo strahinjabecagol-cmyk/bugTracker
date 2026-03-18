@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import db from '../db/database';
 import { validate } from '../middleware/validate';
+import { requireProjectMember } from '../middleware/auth';
 
 const router = Router({ mergeParams: true });
 
@@ -28,7 +29,7 @@ router.get('/', (req, res) => {
 });
 
 // POST /bugs/:id/links
-router.post('/', validate(LinkCreateSchema), (req, res) => {
+router.post('/', validate(LinkCreateSchema), requireProjectMember, (req, res) => {
   const id = Number(req.params.id);
   const { linked_bug_id } = req.body as z.infer<typeof LinkCreateSchema>;
 
@@ -68,7 +69,7 @@ router.post('/', validate(LinkCreateSchema), (req, res) => {
 });
 
 // DELETE /bugs/:id/links/:linked_id
-router.delete('/:linked_id', (req, res) => {
+router.delete('/:linked_id', requireProjectMember, (req, res) => {
   const id = Number(req.params.id);
   const linked_id = Number(req.params.linked_id);
   db.prepare(`

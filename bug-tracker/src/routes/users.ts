@@ -18,13 +18,13 @@ const UserUpdateSchema = UserCreateSchema.partial();
 
 // GET /users
 router.get('/', requireAuth, (_req, res) => {
-  const users = db.prepare('SELECT * FROM users ORDER BY id').all();
+  const users = db.prepare('SELECT id, name, email, role, created_at FROM users ORDER BY id').all();
   res.json(users);
 });
 
 // GET /users/:id
-router.get('/:id', (req, res) => {
-  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
+router.get('/:id', requireAuth, (req, res) => {
+  const user = db.prepare('SELECT id, name, email, role, created_at FROM users WHERE id = ?').get(req.params.id);
   if (!user) {
     res.status(404).json({ error: 'User not found' });
     return;
@@ -39,7 +39,7 @@ router.post('/', requireAdmin, validate(UserCreateSchema), (req, res) => {
   try {
     const stmt = db.prepare('INSERT INTO users (name, email, role, password_hash) VALUES (?, ?, ?, ?)');
     const info = stmt.run(name, email, role, passwordHash);
-    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(info.lastInsertRowid);
+    const user = db.prepare('SELECT id, name, email, role, created_at FROM users WHERE id = ?').get(info.lastInsertRowid);
     res.status(201).json(user);
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
@@ -62,7 +62,7 @@ router.put('/:id', requireAdmin, validate(UserUpdateSchema), (req, res) => {
   const merged = { ...existing, ...updates };
   db.prepare('UPDATE users SET name = ?, email = ?, role = ? WHERE id = ?')
     .run(merged.name, merged.email, merged.role, req.params.id);
-  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
+  const user = db.prepare('SELECT id, name, email, role, created_at FROM users WHERE id = ?').get(req.params.id);
   res.json(user);
 });
 
