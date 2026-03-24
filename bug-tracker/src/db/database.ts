@@ -205,6 +205,36 @@ db.exec(`
   WHERE u.email != 'deleted@system';
 `);
 
+// OAuth 2.0 tables for MCP HTTP server authentication
+db.exec(`
+  CREATE TABLE IF NOT EXISTS oauth_clients (
+    client_id     TEXT PRIMARY KEY,
+    client_name   TEXT NOT NULL,
+    redirect_uris TEXT NOT NULL,
+    created_at    TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS oauth_codes (
+    code                  TEXT PRIMARY KEY,
+    client_id             TEXT NOT NULL,
+    user_id               INTEGER NOT NULL,
+    redirect_uri          TEXT NOT NULL,
+    code_challenge        TEXT NOT NULL,
+    code_challenge_method TEXT NOT NULL DEFAULT 'S256',
+    expires_at            TEXT NOT NULL,
+    used                  INTEGER NOT NULL DEFAULT 0
+  );
+
+  CREATE TABLE IF NOT EXISTS oauth_tokens (
+    access_token   TEXT PRIMARY KEY,
+    refresh_token  TEXT NOT NULL,
+    client_id      TEXT NOT NULL,
+    user_id        INTEGER NOT NULL,
+    expires_at     TEXT NOT NULL,
+    created_at     TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+`);
+
 // System "Deleted User" — comments and bugs from deleted users are reassigned here
 db.prepare(`
   INSERT OR IGNORE INTO users (name, email, role, password_hash)
