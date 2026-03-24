@@ -6,15 +6,16 @@ import {
 import { z } from 'zod';
 import db from '../db/database';
 
-const API = 'http://localhost:3000';
+const API = process.env.APP_URL ?? 'http://localhost:3000';
+const INTERNAL_SECRET = process.env.INTERNAL_SECRET ?? 'dev-internal-secret';
 async function wsBroadcast(msg: unknown) {
   try {
     const res = await fetch(`${API}/internal/broadcast`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-internal-secret': INTERNAL_SECRET },
       body: JSON.stringify(msg),
     });
-    console.error('[wsBroadcast] status:', res.status);
+    if (res.status !== 204) console.error('[wsBroadcast] unexpected status:', res.status);
   } catch (e) {
     console.error('[wsBroadcast] fetch error:', e);
   }

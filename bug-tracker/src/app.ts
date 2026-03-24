@@ -26,15 +26,20 @@ app.use(cookieParser());
 // Auth routes — public (no token required)
 app.use('/auth', authRouter);
 
-// All routes below this line require a valid JWT
-app.use(requireAuth);
-
-// Internal broadcast endpoint — called by the MCP server to push WS events (requires auth)
+// Internal broadcast endpoint — called by the MCP server to push WS events
+// Protected by INTERNAL_SECRET header (must come before requireAuth)
+const INTERNAL_SECRET = process.env.INTERNAL_SECRET ?? 'dev-internal-secret';
 app.post('/internal/broadcast', (req, res) => {
-  console.log('[broadcast] received:', req.body);
+  if (req.headers['x-internal-secret'] !== INTERNAL_SECRET) {
+    res.status(403).json({ error: 'Forbidden' });
+    return;
+  }
   broadcast(req.body);
   res.status(204).send();
 });
+
+// All routes below this line require a valid JWT
+app.use(requireAuth);
 
 // Core routes
 app.use('/users',    usersRouter);
